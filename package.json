@@ -21,8 +21,6 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "test-headless": "ng test --watch=false --browsers=ChromeHeadless",
     "upd-pkg-ver": "npm update --save",
     "upd-pkg-mjr-ver": "npm run npm-check-updates"
   },
@@ -44,17 +42,10 @@
     "@angular-devkit/build-angular": "^19.0.6",
     "@angular/cli": "^19.0.6",
     "@angular/compiler-cli": "^19.0.5",
-    "@types/jasmine": "^5.1.5",
-    "jasmine-core": "^5.5.0",
-    "karma": "^6.4.4",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-coverage": "^2.2.1",
-    "karma-jasmine": "^5.1.0",
-    "karma-jasmine-html-reporter": "^2.1.0",
-    "npm-check-updates": "^16.14.20",
+    "npm-check-updates": "^17.1.11",
     "typescript": "^5.6.3"
   },
   "engines": {
-    "node": "^18.13.0 || >=20.9.0"
+    "node": "^18.15.0 || >=20.0.0"
   }
 }
