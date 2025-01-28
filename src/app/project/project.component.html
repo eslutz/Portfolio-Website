@@ -1,0 +1,36 @@
+<p class="project-description">
+  <i class="fa-solid fa-angles-right"></i>
+  <strong class="left-padding--xs">{{ project.title }}</strong>
+</p>
+<ul class="list">
+  <li class="list-item">
+    <p class="project-description" [innerHTML]="project.description"></p>
+  </li>
+  <li class="list-item" *ngIf="project.imageSrc">
+    <img
+      class="project-image"
+      [src]="project.imageSrc"
+      [alt]="project.title + ' image'"
+    />
+  </li>
+  <li class="list-item" *ngIf="project.videoSrc">
+    <video class="project-image" controls>
+      <source [src]="project.videoSrc" />
+    </video>
+  </li>
+  <li class="list-item" *ngIf="project.demoLink">
+    <a class="link" [href]="project.demoLink" target="_blank">
+      {{ project.demoLinkText || "View Project" }}
+      <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
+    </a>
+  </li>
+  <li class="list-item">
+    <div>
+      <i class="fa-brands fa-github"></i>:
+      <a class="link" [href]="project.codeLink" target="_blank">
+        Code
+        <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
+      </a>
+    </div>
+  </li>
+</ul>
