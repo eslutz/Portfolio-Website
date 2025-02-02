@@ -11,8 +11,8 @@
 @font-face {
   font-family: 'Mona Sans';
   src:
-    url('assets/fonts/Mona-Sans.woff2') format('woff2 supports variations'),
-    url('assets/fonts/Mona-Sans.woff2') format('woff2-variations');
+    url('../assets/fonts/Mona-Sans.woff2') format('woff2 supports variations'),
+    url('../assets/fonts/Mona-Sans.woff2') format('woff2-variations');
   font-weight: 200 900;
   font-stretch: 75% 125%;
 }
@@ -44,6 +44,14 @@ p {
   margin: 0 auto;
   max-width: 120rem;
   padding: 5.6rem 3.2rem;
+}
+
+.container--no-bottom {
+  padding-bottom: 0;
+}
+
+.container--no-top {
+  padding-top: 0;
 }
 
 .half-width {
@@ -113,11 +121,6 @@ p {
 .heading-tertiary {
   font-size: 3rem;
   padding: 0 0 2.5rem 0;
-}
-
-.heading-quaternary {
-  font-size: 2.5rem;
-  padding: 0 0 1.5rem 0;
 }
 
 /* IMAGE */

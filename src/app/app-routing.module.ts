@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ErrorComponent } from './error/error.component';
-import { HomeComponent } from './home/home.component';
-import { ProjectsComponent } from './projects/projects.component';
-import { AchievementsComponent } from './achievements/achievements.component';
+import { ErrorComponent } from './layout/error/error.component';
+import { HomeComponent } from './features/home/home.component';
+import { ProjectsComponent } from './features/projects/projects.component';
+import { AchievementsComponent } from './features/achievements/achievements.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
