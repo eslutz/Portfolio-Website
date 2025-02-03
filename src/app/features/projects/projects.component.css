@@ -1,8 +1,5 @@
 .project {
-  -webkit-column-gap: 2rem;
-  -moz-column-gap: 2rem;
-  column-gap: 2rem;
-  row-gap: 2rem;
+  gap: 2rem;
   display: -ms-grid;
   display: grid;
   -ms-grid-columns: 300px 1fr;
