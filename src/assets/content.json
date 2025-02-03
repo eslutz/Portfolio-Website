@@ -37,6 +37,15 @@
       "codeLink": "https://github.com/eslutz/CS-330-Portfolio"
     },
     {
+      "title": "MyReads",
+      "description": "A bookshelf app that allows you to search for and categorize books you have read, are currently reading, or want to read, built using React.",
+      "imageSrc": "assets/images/projects/myreads.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udacity-React-Fundamentals-MyReads",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udacity-React-Fundamentals-MyReads"
+    },
+    {
       "title": "Nexter Website",
       "description": "The Nexter website created using a grid layout utilizing CSS Grid from the Udemy course 'Advanced CSS and Sass: Flexbox, Grid, Animations and More!' The project is written with HTML and CSS utilizing the Sass preprocessor.",
       "imageSrc": "assets/images/projects/nexter.png",
