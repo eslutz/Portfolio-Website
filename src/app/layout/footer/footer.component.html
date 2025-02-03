@@ -1,0 +1,25 @@
+<footer class="footer">
+  <nav class="footer-container">
+    <ul class="footer-nav">
+      <li>
+        email:
+        <a class="nav-link" [href]="'mailto:' + footer.email">{{footer.email}}</a>
+      </li>
+      <li>
+        <i class="fa-brands fa-github"></i>:
+        <a class="nav-link" [href]="footer.github.url" target="_blank">
+          {{footer.github.display}}
+        </a>
+      </li>
+      <li>
+        <i class="fa-brands fa-linkedin"></i>:
+        <a class="nav-link" [href]="footer.linkedin.url" target="_blank">
+          {{footer.linkedin.display}}
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <div class="footer-container">
+    &copy; {{currentYear}} Eric Slutz. All rights reserved.
+  </div>
+</footer>

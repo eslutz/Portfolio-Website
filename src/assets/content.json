@@ -1,0 +1,235 @@
+{
+  "home": {
+    "title": "Eric Slutz | Portfolio",
+    "content": "As a full-stack software engineer, I have experience building and maintaining scalable web applications, APIs, and cloud-based solutions utilizing technologies such as C#, JavaScript/TypeScript, .NET, Angular, React, and cloud platforms like AWS and Azure. I have contributed to projects ranging from modernizing internal libraries and enhancing system security to optimizing CI/CD pipelines and integrating cloud services.<br /><br />My journey into software engineering began in high school, where I first learned to code, and continued through a B.S. in Information Technology from Oakland University. After eight years in IT support and infrastructure management at Rocket Mortgage, I transitioned into software development through an internal full-stack coding bootcamp, reigniting my passion for problem-solving and programming. I later earned a B.S. in Computer Science (summa cum laude) with a concentration in Software Engineering from Southern New Hampshire University.<br /><br />In support of my technical growth, I earned certifications in Microsoft Azure Fundamentals and GitHub Foundations, reinforcing my commitment to continuous learning and staying current with industry trends. My expertise spans backend development with .NET and SQL, frontend development with modern JavaScript frameworks, and DevOps practices, including CI/CD automation and cloud security. I am also experienced in database management (SQL Server, PostgreSQL, MongoDB) and developing queries to support application development.<br /><br />Beyond coding, I have contributed to open-source projects and improved software development workflows. I am passionate about software quality and best practices, ensuring maintainable, scalable, and resilient applications through thoughtful architecture, automated testing, static code analysis, code reviews, and efficient CI/CD processes. Additionally, I have led team initiatives to standardize documentation and improve branching strategies, and mentored engineers transitioning into software development.<br /><br />Driven by a passion for building high-quality, maintainable software, I thrive on solving complex problems and staying at the forefront of modern development practices."
+  },
+  "footer": {
+    "email": "eric@ericslutz.dev",
+    "github": {
+      "url": "https://github.com/eslutz",
+      "display": "github.com/eslutz"
+    },
+    "linkedin": {
+      "url": "https://www.linkedin.com/in/ericslutz/",
+      "display": "linkedin.com/in/ericslutz"
+    }
+  },
+  "projects": [
+    {
+      "title": "Space Adventure Text Game",
+      "description": "A small text based game set on your ship written in Python.",
+      "imageSrc": "assets/images/projects/space_adventure_text_game.png",
+      "videoSrc": null,
+      "demoLink": "https://replit.com/@eslutz/Space-Adventure-Text-Game?v=1",
+      "demoLinkText": "Play the game",
+      "codeLink": "https://github.com/eslutz/Space-Adventure-Text-Game"
+    },
+    {
+      "title": "Guessing Game",
+      "description": "A simple game written in Python about guessing a number with three different ways to play.",
+      "imageSrc": "assets/images/projects/guessing_game.png",
+      "videoSrc": null,
+      "demoLink": "https://replit.com/@eslutz/Guessing-Game?v=1",
+      "demoLinkText": "Play the game",
+      "codeLink": "https://github.com/eslutz/Guessing-Game"
+    },
+    {
+      "title": "Bricks n Balls",
+      "description": "A simple game written in C++ using the OpenGL library about destroying some bricks with some balls.",
+      "imageSrc": null,
+      "videoSrc": "assets/images/projects/bricks_n_balls.mp4",
+      "demoLink": "https://github.com/eslutz/Bricks-n-Balls/releases/tag/v1.0.0",
+      "demoLinkText": "Download the game",
+      "codeLink": "https://github.com/eslutz/Bricks-n-Balls"
+    },
+    {
+      "title": "OpenGL 3D Scene",
+      "description": "A 3D scene based on a real life image created using the OpenGL library and written in C++.",
+      "imageSrc": null,
+      "videoSrc": "assets/images/projects/3d_scene.mp4",
+      "demoLink": null,
+      "demoLinkText": null,
+      "codeLink": "https://github.com/eslutz/CS-330-Portfolio"
+    },
+    {
+      "title": "MyReads",
+      "description": "A bookshelf app that allows you to search for and categorize books you have read, are currently reading, or want to read, built using React.",
+      "imageSrc": "assets/images/projects/myreads.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udacity-React-Fundamentals-MyReads",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udacity-React-Fundamentals-MyReads"
+    },
+    {
+      "title": "Nexter Website",
+      "description": "The Nexter website created using a grid layout utilizing CSS Grid from the Udemy course 'Advanced CSS and Sass: Flexbox, Grid, Animations and More!' The project is written with HTML and CSS utilizing the Sass preprocessor.",
+      "imageSrc": "assets/images/projects/nexter.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udemy-Advanced-CSS-and-Sass--Nexter-Project",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udemy-Advanced-CSS-and-Sass--Nexter-Project"
+    },
+    {
+      "title": "Trillo Website",
+      "description": "The Trillo website created using a flexbox layout from the Udemy course 'Advanced CSS and Sass: Flexbox, Grid, Animations and More!' The project is written with HTML and CSS utilizing the Sass preprocessor.",
+      "imageSrc": "assets/images/projects/trillo.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udemy-Advanced-CSS-and-Sass--Trillo-Project",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udemy-Advanced-CSS-and-Sass--Trillo-Project"
+    },
+    {
+      "title": "Natours Website",
+      "description": "The Natours website created using a float layout from the Udemy course 'Advanced CSS and Sass: Flexbox, Grid, Animations and More!' The project is written with HTML and CSS utilizing the Sass preprocessor.",
+      "imageSrc": "assets/images/projects/natours.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udemy-Advanced-CSS-and-Sass--Natours-Project",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udemy-Advanced-CSS-and-Sass--Natours-Project"
+    },
+    {
+      "title": "Omnifood Website v2",
+      "description": "An updated version of the website created taking the newest version of the course 'Build Responsive Real-World Websites with HTML and CSS' through Udemy written using HTML, CSS, and JavaScript.",
+      "imageSrc": "assets/images/projects/omnifood_v2.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udemy-Responsive-Website-UPDATED",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udemy-Responsive-Website-UPDATED"
+    },
+    {
+      "title": "Omnifood Website",
+      "description": "A website created taking the course 'Build Responsive Real-World Websites with HTML and CSS' through Udemy written using HTML, CSS, and JavaScript.",
+      "imageSrc": "assets/images/projects/omnifood.png",
+      "videoSrc": null,
+      "demoLink": "https://eslutz.github.io/Udemy-Responsive-Website",
+      "demoLinkText": "View the site",
+      "codeLink": "https://github.com/eslutz/Udemy-Responsive-Website"
+    },
+    {
+      "title": "GitHub Actions Workflow",
+      "description": "This repository contains several workflow files that other repos can then call using the GitHub Actions <a href=\"https://docs.github.com/en/actions/using-workflows/sharing-workflows-secrets-and-runners-with-your-organization#sharing-workflows\" target=\"_blank\">Shared Workflows</a> feature. The shared workflow files are configured to build the code from the calling repo, run unit tests, and run a static analysis using <a href=\"https://github.com/marketplace/actions/snyk\" target=\"_blank\">Snyk</a> to check for dependency vulnerabilities. An additional workflow could be called to package and publish a library NuGet package to NuGet.org.<br />The shared workflow can be called by copying the pre-made workflow files from the <strong><code>Generic Workflows</code></strong> folder into the target repos. These workflows, when triggered, would call the workflow files in the specified repo. They were written so that the unit test and static analysis workflows would run for any new pull request or updates to a pull request in the calling repo. The workflow to package and publish a NuGet file would be run any time a new release is created in the calling repo.",
+      "imageSrc": null,
+      "videoSrc": null,
+      "demoLink": null,
+      "demoLinkText": null,
+      "codeLink": "https://github.com/eslutz/RockLib.Workflows"
+    }
+  ],
+  "certifications": [
+    {
+      "title": "Microsoft Certified: Azure Fundamentals",
+      "description": "Demonstrates my understanding of cloud computing concepts, best practices, core Azure services, and Azure management and governance, including compute, storage, networking, and security within the Azure ecosystem.",
+      "link": "https://learn.microsoft.com/en-us/users/ericslutz/credentials/a651bb748a3c145c",
+      "earned": "April 2, 2024",
+      "expires": null
+    },
+    {
+      "title": "GitHub Foundations",
+      "description": "Demonstrates my foundational knowledge of GitHub, including repositories, commits, branching, collaboration features, and project management, as well as my proficiency with industry-standard version control and development tools.",
+      "link": "https://www.credly.com/badges/8feff57a-59cb-450e-bec8-572ef4e74a11",
+      "earned": "July 22, 2024",
+      "expires": "July 22, 2027"
+    },
+    {
+      "title": "Udacity: React Fundamentals",
+      "description": "Showcases my knowledge of core React development concepts, including creating interactive components with JSX, managing state and hooks, handling lifecycle events, using React Router, and applying modern web design patterns.",
+      "link": "https://www.udacity.com/certificate/e/c55520c0-880d-11ef-993f-bbafa5c7394b",
+      "earned": "December 16, 2024",
+      "expires": null
+    }
+  ],
+  "education": {
+    "degrees": [
+      {
+        "institution": "Southern New Hampshire University",
+        "degree": "Bachelor of Science in Computer Science",
+        "honors": "summa cum laude",
+        "details": "concentration in software engineering",
+        "graduationYear": 2023,
+        "gpa": 4.0
+      },
+      {
+        "institution": "Oakland University",
+        "degree": "Bachelor of Science in Information Technology",
+        "honors": null,
+        "details": null,
+        "graduationYear": 2011,
+        "gpa": 3.43
+      }
+    ],
+    "honors": {
+      "societies": {
+        "title": "Honor Societies",
+        "description": "I have been inducted into two honor societies; the <a class=\"link\" href=\"https://www.nsls.org/\" target=\"_blank\">National Society of Leadership and Success</a> (NSLS) and Alpha Sigma Lambda."
+      },
+      "lists": {
+        "list": [
+          {
+            "title": "SNHU Presidents List",
+            "description": "I have been named to the SNHU Presidents List 4 times.",
+            "details": "Eligibility for the SNHU Presidents List requires full-time undergraduate students who have earned a grade-point average of at least 3.7 for each paired 8-week term."
+          },
+          {
+            "title": "SNHU Honor Roll",
+            "description": "I have been named to the SNHU Honor Roll for the past 9 terms.",
+            "details": "Eligibility for the SNHU Honor Roll requires that a student earn a grade point average of at least 3.5 for the 8-week term."
+          }
+        ],
+        "link":{
+          "title": "Merit Pages",
+          "description": "View my SNHU Presidents List and Honor Roll achievements at <a class=\"link\" href=\"https://meritpages.com/eslutz/\" target=\"_blank\">meritpages.com/eslutz</a>."
+        }
+      }
+    }
+  },
+  "workRecognition": [
+    {
+      "company": "Rocket Mortgage",
+      "description": "Recognition from leaders and peers at Rocket Mortgage",
+      "recognition": [
+        {
+          "type": "text",
+          "date": "November 2021",
+          "description": "I received recognition as team member of the month in the Engineering Experience department by exemplifying the Rocket Mortgage ISM <em>\"We are the they.\"</em>",
+          "quote": "Eric is a Team Member who is always willing to jump in, lend a hand or help a TM in need. He goes out of his way to help and support TM's even if the area is not one he has experience in. He is passionate about helping others, lending a hand and helping to move the needle."
+        },
+        {
+          "type": "image",
+          "date": null,
+          "src": "assets/images/recognition/kristy-helping-out.png",
+          "alt": "First one to volunteer"
+        },
+        {
+          "type": "image",
+          "date": null,
+          "src": "assets/images/recognition/kristy-efficiency-and-reuse.png",
+          "alt": "Thinking about efficiency"
+        },
+        {
+          "type": "image",
+          "date": null,
+          "src": "assets/images/recognition/kristy-documentation.png",
+          "alt": "Organizing the process and sharing it"
+        },
+        {
+          "type": "image",
+          "date": null,
+          "src": "assets/images/recognition/derik-utility-reports.png",
+          "alt": "For running data gathering scripts"
+        },
+        {
+          "type": "image",
+          "date": null,
+          "src": "assets/images/recognition/aydin-figure-it-out.png",
+          "alt": "Always figuring things out"
+        },
+        {
+          "type": "image",
+          "date": null,
+          "src": "assets/images/recognition/derik-ex-presentation.png",
+          "alt": "Thank you for presenting"
+        }
+      ]
+    }
+  ]
+}
