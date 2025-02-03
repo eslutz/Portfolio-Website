@@ -30,7 +30,7 @@ concurrency:
 #########################################################################################
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name != 'pull_request' && github.event.action != 'closed'
     name: Build and Deploy Job
     runs-on: ubuntu-latest
     environment:
@@ -59,7 +59,7 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/" # App source code path
-          output_location: "dist/eslutz.github.io" # Built app content directory - optional
+          output_location: "dist/eslutz.github.io/browser" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
 
       - name: Create Release
