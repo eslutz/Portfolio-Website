@@ -1,4 +1,19 @@
 {
+  "home": {
+    "title": "Eric Slutz | Portfolio",
+    "content": "As a full-stack software engineer, I have experience building and maintaining scalable web applications, APIs, and cloud-based solutions utilizing technologies such as C#, JavaScript/TypeScript, .NET, Angular, React, and cloud platforms like AWS and Azure. I have contributed to projects ranging from modernizing internal libraries and enhancing system security to optimizing CI/CD pipelines and integrating cloud services.<br /><br />My journey into software engineering began in high school, where I first learned to code, and continued through a B.S. in Information Technology from Oakland University. After eight years in IT support and infrastructure management at Rocket Mortgage, I transitioned into software development through an internal full-stack coding bootcamp, reigniting my passion for problem-solving and programming. I later earned a B.S. in Computer Science (summa cum laude) with a concentration in Software Engineering from Southern New Hampshire University.<br /><br />In support of my technical growth, I earned certifications in Microsoft Azure Fundamentals and GitHub Foundations, reinforcing my commitment to continuous learning and staying current with industry trends. My expertise spans backend development with .NET and SQL, frontend development with modern JavaScript frameworks, and DevOps practices, including CI/CD automation and cloud security. I am also experienced in database management (SQL Server, PostgreSQL, MongoDB) and developing queries to support application development.<br /><br />Beyond coding, I have contributed to open-source projects and improved software development workflows. I am passionate about software quality and best practices, ensuring maintainable, scalable, and resilient applications through thoughtful architecture, automated testing, static code analysis, code reviews, and efficient CI/CD processes. Additionally, I have led team initiatives to standardize documentation and improve branching strategies, and mentored engineers transitioning into software development.<br /><br />Driven by a passion for building high-quality, maintainable software, I thrive on solving complex problems and staying at the forefront of modern development practices."
+  },
+  "footer": {
+    "email": "eric@ericslutz.dev",
+    "github": {
+      "url": "https://github.com/eslutz",
+      "display": "github.com/eslutz"
+    },
+    "linkedin": {
+      "url": "https://www.linkedin.com/in/ericslutz/",
+      "display": "linkedin.com/in/ericslutz"
+    }
+  },
   "projects": [
     {
       "title": "Space Adventure Text Game",

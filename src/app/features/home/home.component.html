@@ -1,37 +1,11 @@
 <header class="light-bg">
   <div class="heading-container">
-    <h1 class="heading-primary">Eric Slutz | Portfolio</h1>
+    <h1 class="heading-primary">{{ home.title }}</h1>
   </div>
 </header>
 <section class="about" id="about">
   <div class="container">
-    <!-- TODO: update content -->
     <h2 class="heading-secondary">Background</h2>
-    <p>
-      I am an experienced Software Engineer with a background in contributing to
-      multiple projects and libraries using test-driven development and agile
-      methodologies. My skills include proficiency in C#, Javascript/Typescript,
-      HTML/CSS, and experienced in frontend development using Angular and React.
-      Additionally, I am experienced in CI/CD pipeline development using
-      CircleCI, GitHub Actions, and Azure Pipelines and proficient in AWS and
-      Azure tools and services. I strive to deliver high-quality, maintainable
-      code. I am continuously seeking out new challenges and opportunities to
-      grow and to improve my skills and advance in the field. Prior to that, for
-      eight years I worked as a Senior Desktop Technician until mid 2020 when I
-      moved into software development.
-    </p>
-  </div>
-</section>
-<section class="education light-bg" id="education">
-  <div class="container">
-    <h2 class="heading-secondary">Education</h2>
-    <p>
-      I recently graduated from Southern New Hampshire University, earning a
-      Bachelor of Science in Computer Science, summa cum laude, with a
-      concentration in Software Engineering. Previously, I completed a Full
-      Stack C# .NET Bootcamp through Grand Circus. Before that I earned a
-      Bachelor of Science in Computer Information Technology from Oakland
-      University.
-    </p>
+    <p [innerHTML]="home.content"></p>
   </div>
 </section>
