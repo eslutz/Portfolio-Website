@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Achievements } from './achievements.interface';
-import achievementsData from './recognition.json';
+import data from '../../../assets/content.json';
 
 @Component({
   selector: 'app-achievements',
@@ -9,7 +8,9 @@ import achievementsData from './recognition.json';
   standalone: false,
 })
 export class AchievementsComponent implements OnInit {
-  achievements: Achievements = achievementsData as Achievements;
+  education = data.education;
+  certifications = data.certifications;
+  recognition = data.workRecognition;
 
   ngOnInit(): void {
   }

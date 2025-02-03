@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import projectsData from './projects.json';
+import data from 'src/assets/content.json';
 
 @Component({
   selector: 'app-projects',
@@ -8,7 +8,7 @@ import projectsData from './projects.json';
   standalone: false,
 })
 export class ProjectsComponent implements OnInit {
-  projects = projectsData;
+  projects = data.projects;
 
   ngOnInit(): void {
   }

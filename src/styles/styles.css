@@ -46,14 +46,6 @@ p {
   padding: 5.6rem 3.2rem;
 }
 
-.container--no-bottom {
-  padding-bottom: 0;
-}
-
-.container--no-top {
-  padding-top: 0;
-}
-
 .half-width {
   margin: 0 auto;
   width: 50%;
@@ -238,6 +230,10 @@ p {
 
 .u-margin-top-sm {
 	margin-top: 2.5rem;
+}
+
+.u-margin-bottom-sm {
+  margin-bottom: 2.5rem;
 }
 
 .u-indent {
