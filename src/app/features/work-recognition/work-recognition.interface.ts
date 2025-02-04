@@ -4,12 +4,18 @@ export enum RecognitionType {
 }
 
 export interface WorkRecognition {
+  id: string;
+  component: string;
+  companies: Company[];
+}
+
+interface Company {
   company: string;
   description: string;
   recognition: Recognition[];
 }
 
-export interface Recognition {
+interface Recognition {
   type: RecognitionType;
   date: string | null;
   description?: string;

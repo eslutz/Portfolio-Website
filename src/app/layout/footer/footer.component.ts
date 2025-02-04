@@ -10,7 +10,7 @@ import data from '../../../assets/content.json';
   standalone: false
 })
 export class FooterComponent implements OnInit {
-  footer: Footer = data.footer;
+  footer: Footer = data.find((item) => item.component === 'footer') as Footer;
   currentYear: number = new Date().getFullYear();
 
   ngOnInit(): void {

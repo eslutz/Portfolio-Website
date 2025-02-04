@@ -1,19 +1,40 @@
 export interface Education {
+  id: string;
+  component: string;
   degrees: Degree[];
-  honors: {
-    societies: { title: string; description: string; };
-    lists: {
-      list: { title: string; description: string; details: string; }[];
-      link: { title: string; description: string; };
-    };
-  };
+  honors: Honors;
 }
 
-export interface Degree {
+interface Degree {
   institution: string;
   degree: string;
   honors: string | null;
   details: string | null;
   graduationYear: number;
   gpa: number;
+}
+interface Honors {
+  societies: Society;
+  lists: HonorLists;
+}
+
+interface Society {
+  title: string;
+  description: string;
+}
+
+interface HonorLists {
+  list: List[];
+  link: Link;
+}
+
+interface List {
+  title: string;
+  description: string;
+  details: string;
+}
+
+interface Link {
+  title: string;
+  description: string;
 }

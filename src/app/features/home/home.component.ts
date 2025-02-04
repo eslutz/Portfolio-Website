@@ -9,7 +9,7 @@ import data from '../../../assets/content.json';
   standalone: false,
 })
 export class HomeComponent {
-  home: Home = data.home;
+  home: Home = data.find((item) => item.component === 'home') as Home;
 
   ngOnInit(): void {}
 }

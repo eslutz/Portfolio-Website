@@ -8,19 +8,7 @@ import { WorkRecognition, RecognitionType } from './work-recognition.interface';
   standalone: false
 })
 export class WorkRecognitionComponent {
-  @Input() set workRecognition(value: any[]) {
-    this._workRecognition = value.map(company => ({
-      ...company,
-      recognition: company.recognition.map((r: any) => ({
-        ...r,
-        type: r.type as RecognitionType
-      }))
-    }));
-  }
-  get workRecognition(): WorkRecognition[] {
-    return this._workRecognition;
-  }
+  @Input() workRecognition!: WorkRecognition;
 
-  private _workRecognition: WorkRecognition[] = [];
   protected readonly RecognitionType = RecognitionType;
 }

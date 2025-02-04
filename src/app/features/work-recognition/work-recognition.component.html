@@ -1,6 +1,6 @@
 <div class="container">
   <h2 class="heading-secondary">Work Recognition</h2>
-  <ng-container *ngFor="let company of workRecognition">
+  <ng-container *ngFor="let company of workRecognition.companies">
     <h3 class="heading-tertiary">{{ company.description }}</h3>
     <ul class="list">
       <ng-container *ngFor="let recognition of company.recognition">
