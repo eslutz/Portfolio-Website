@@ -5,11 +5,29 @@
 /tmp
 /out-tsc
 /bazel-out
+/out
+/bin
+/obj
 
 # Node
 **/node_modules
-npm-debug.log
-yarn-error.log
+jspm_packages/
+bower_components/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+libpeerconnection.log
+
+# Testing and Coverage
+coverage/
+.nyc_output
+/coverage
+testem.log
 
 # IDEs and editors
 .idea/
@@ -19,8 +37,6 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
-
-# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -28,14 +44,44 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-# Miscellaneous
+# Build and Cache
+.grunt
+.lock-wscript
+build/Release
+.cache
+.next
+.nuxt
+.vuepress/dist
+.serverless/
+.fusebox/
 **/.angular/cache
 .sass-cache/
+
+# Misc
+pids
+*.pid
+*.seed
+*.pid.lock
+lib-cov
+typings/
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
 /connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
+
+# Environment and Config
+.env
+.env.test
+appsettings.json
+local.settings.json
+
+# Azure/Database
+.dynamodb/
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
 
 # System files
 .DS_Store

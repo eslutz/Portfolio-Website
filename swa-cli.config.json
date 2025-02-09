@@ -1,0 +1,11 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "portfolio": {
+      "appLocation": "src",
+      "apiLocation": "api",
+      "outputLocation": "src/dist/portfolio/browser",
+      "apiDevserverUrl": "http://localhost:7071"
+    }
+  }
+}
