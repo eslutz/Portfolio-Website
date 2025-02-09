@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import data from 'src/assets/content.json';
+import data from 'assets/content.json';
 import { Project } from '../project/project.interface';
 
 @Component({

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Footer } from './footer.interface';
-import data from '../../../assets/content.json';
+import data from 'assets/content.json';
 
 
 @Component({
