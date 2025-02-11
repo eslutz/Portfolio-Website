@@ -1,11 +1,25 @@
 <section class="achievements" id="achievements">
   <section class="education" id="education">
-    <app-education [education]="education"></app-education>
+    <h1 class="container loading" *ngIf="loadingStates.education">Loading Education</h1>
+    <h1 class="container loading-error" *ngIf="errors.education">{{ errors.education }}</h1>
+    <app-education *ngIf="!loadingStates.education && !errors.education && education"
+      [education]="education">
+    </app-education>
   </section>
+
   <section class="certificaitions light-bg" id="certifications">
-    <app-certifications [certifications]="certifications"></app-certifications>
+    <h1 class="container loading" *ngIf="loadingStates.certifications">Loading Certifications</h1>
+    <h1 class="container loading-error" *ngIf="errors.certifications">{{ errors.certifications }}</h1>
+    <app-certifications *ngIf="!loadingStates.certifications && !errors.certifications && certifications.length"
+      [certifications]="certifications">
+    </app-certifications>
   </section>
+
   <section class="work-recognition" id="work-recognition">
-    <app-work-recognition [workRecognition]="recognition"></app-work-recognition>
+    <h1 class="container loading" *ngIf="loadingStates.recognition">Loading Recognition</h1>
+    <h1 class="container loading-error" *ngIf="errors.recognition">{{ errors.recognition }}</h1>
+    <app-work-recognition *ngIf="!loadingStates.recognition && !errors.recognition && recognition"
+      [workRecognition]="recognition">
+    </app-work-recognition>
   </section>
 </section>
