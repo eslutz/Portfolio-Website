@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Home } from './home.interface';
-import data from 'assets/content.json';
+import { PortfolioApiService } from '../../shared/services/portfolio-api.service';
+import { Subject, finalize, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -8,8 +9,29 @@ import data from 'assets/content.json';
   styleUrls: ['./home.component.css'],
   standalone: false,
 })
-export class HomeComponent implements OnInit {
-  home: Home = data.find((item) => item.component === 'home') as Home;
+export class HomeComponent implements OnInit, OnDestroy {
+  home: Home | null = null;
+  isLoading: boolean = true;
+  error: string | null = null;
+  private destroy$ = new Subject<void>();
 
-  ngOnInit(): void {}
+  constructor(private portfolioApi: PortfolioApiService) {}
+
+  ngOnInit(): void {
+    this.portfolioApi.getComponentData<Home>('home').pipe(
+      takeUntil(this.destroy$),
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: ([homeData]) => this.home = homeData,
+      error: (error) => {
+        console.error('Error fetching home data:', error);
+        this.error = 'Failed to load home content';
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

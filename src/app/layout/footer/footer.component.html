@@ -1,5 +1,5 @@
 <footer class="footer">
-  <nav class="footer-container">
+  <nav class="footer-container" *ngIf="!isLoading && !error && footer">
     <ul class="footer-nav">
       <li>
         email:

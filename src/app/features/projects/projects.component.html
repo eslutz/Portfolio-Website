@@ -1,10 +1,17 @@
 <section class="projects" id="projects">
   <div class="container">
-    <h2 class="heading-secondary">Projects</h2>
-    <app-project
-      *ngFor="let project of projects"
-      [project]="project"
-      class="project"
-    ></app-project>
+    <h1 class="loading" *ngIf="isLoading">Loading Projects</h1>
+    <h1 class="loading-error" *ngIf="error">{{ error }}</h1>
+    <ng-container *ngIf="!isLoading && !error">
+      <h2 class="heading-secondary">Projects</h2>
+      <div *ngIf="projects.length === 0">No projects to display.</div>
+      <div *ngIf="projects.length > 0">
+        <app-project
+          *ngFor="let project of projects"
+          [project]="project"
+          class="project"
+        ></app-project>
+      </div>
+    </ng-container>
   </div>
 </section>

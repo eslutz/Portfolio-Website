@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -31,8 +32,14 @@ import { WorkRecognitionComponent } from './features/work-recognition/work-recog
     ProjectsComponent,
     WorkRecognitionComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule],
-  providers: [Title],
+  imports: [
+    BrowserModule,
+    AppRoutingModule
+  ],
+  providers: [
+    Title,
+    provideHttpClient(withInterceptorsFromDi())
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
