@@ -4,7 +4,7 @@
     "portfolio": {
       "appLocation": "src",
       "apiLocation": "api",
-      "outputLocation": "src/dist/portfolio/browser",
+      "outputLocation": "dist/portfolio/browser",
       "apiDevserverUrl": "http://localhost:7071"
     }
   }

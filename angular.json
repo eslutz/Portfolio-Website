@@ -11,7 +11,7 @@
         }
       },
       "root": "",
-      "sourceRoot": "/",
+      "sourceRoot": "src",
       "prefix": "app",
       "architect": {
         "build": {
@@ -20,19 +20,19 @@
             "outputPath": {
               "base": "dist/portfolio"
             },
-            "index": "index.html",
+            "index": "src/index.html",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "css",
             "assets": [
-              "favicon.ico",
-              "assets",
-              "sitemap.xml",
-              "robots.txt"
+              "src/favicon.ico",
+              "src/assets",
+              "src/sitemap.xml",
+              "src/robots.txt"
             ],
-            "styles": ["styles/styles.css"],
+            "styles": ["src/styles/styles.css"],
             "scripts": [],
-            "browser": "main.ts"
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
