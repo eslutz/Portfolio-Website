@@ -1,7 +1,10 @@
 <div class="container">
   <h2 class="heading-secondary">Certifications</h2>
   <ul class="list">
-    <li class="list-item" [class.u-margin-bottom-sm]="!last" *ngFor="let cert of certifications; let last = last">
+    <li
+      class="list-item"
+      [class.u-margin-bottom-sm]="!last"
+      *ngFor="let cert of certifications; let last = last">
       <ul class="list">
         <li class="list-item">
           <p>
@@ -11,13 +14,16 @@
         <li class="list-item">
           <small>
             <em>Earned {{ cert.earned }}</em>
-            <span *ngIf="cert.expires">, <em>Expires {{ cert.expires }}</em></span>
+            <span *ngIf="cert.expires"
+              >, <em>Expires {{ cert.expires }}</em></span
+            >
           </small>
         </li>
         <li class="list-item">
           <a *ngIf="cert.link" class="link" [href]="cert.link" target="_blank">
             View Certificate
-            <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
+            <i
+              class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
           </a>
         </li>
       </ul>
