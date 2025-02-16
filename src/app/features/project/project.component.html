@@ -10,8 +10,7 @@
     <img
       class="project-image image-shadow"
       [src]="project.imageSrc"
-      [alt]="project.title + ' image'"
-    />
+      [alt]="project.title + ' image'" />
   </li>
   <li class="list-item" *ngIf="project.videoSrc">
     <video class="project-image" controls>
@@ -20,7 +19,7 @@
   </li>
   <li class="list-item" *ngIf="project.demoLink">
     <a class="link" [href]="project.demoLink" target="_blank">
-      {{ project.demoLinkText || "View Project" }}
+      {{ project.demoLinkText || 'View Project' }}
       <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
     </a>
   </li>
