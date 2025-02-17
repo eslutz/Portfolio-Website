@@ -3,7 +3,7 @@ export interface Certification {
   component: string;
   title: string;
   description: string;
-  link: string | null;
+  link?: string;
   earned: string;
-  expires: string | null;
+  expires?: string;
 }
