@@ -28,26 +28,6 @@ public class GetCosmosData
     }
   }
 
-  private bool ValidateConfiguration(IConfiguration config, out string connectionString, out string databaseName, out string containerName)
-  {
-    connectionString = config["COSMOS_CONNECTION_STRING"] ?? string.Empty;
-    databaseName = config["COSMOS_DATABASE_NAME"] ?? string.Empty;
-    containerName = config["COSMOS_CONTAINER_NAME"] ?? string.Empty;
-
-    var missingValues = new List<string>();
-    if (string.IsNullOrEmpty(connectionString)) missingValues.Add("COSMOS_CONNECTION_STRING");
-    if (string.IsNullOrEmpty(databaseName)) missingValues.Add("COSMOS_DATABASE_NAME");
-    if (string.IsNullOrEmpty(containerName)) missingValues.Add("COSMOS_CONTAINER_NAME");
-
-    if (missingValues.Count != 0)
-    {
-      _logger.LogError("Missing required configuration values: {Values}", string.Join(", ", missingValues));
-      return false;
-    }
-
-    return true;
-  }
-
   [Function("GetCosmosData")]
   public async Task<IActionResult> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request)
@@ -105,6 +85,26 @@ public class GetCosmosData
       _logger.LogError(ex, "Error fetching items");
       return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
     }
+  }
+
+  private bool ValidateConfiguration(IConfiguration config, out string connectionString, out string databaseName, out string containerName)
+  {
+    connectionString = config["COSMOS_CONNECTION_STRING"] ?? string.Empty;
+    databaseName = config["COSMOS_DATABASE_NAME"] ?? string.Empty;
+    containerName = config["COSMOS_CONTAINER_NAME"] ?? string.Empty;
+
+    var missingValues = new List<string>();
+    if (string.IsNullOrEmpty(connectionString)) missingValues.Add("COSMOS_CONNECTION_STRING");
+    if (string.IsNullOrEmpty(databaseName)) missingValues.Add("COSMOS_DATABASE_NAME");
+    if (string.IsNullOrEmpty(containerName)) missingValues.Add("COSMOS_CONTAINER_NAME");
+
+    if (missingValues.Count != 0)
+    {
+      _logger.LogError("Missing required configuration values: {Values}", string.Join(", ", missingValues));
+      return false;
+    }
+
+    return true;
   }
 
   private async Task<List<dynamic>> FetchItemsAsync(QueryDefinition queryDefinition, Component component)
