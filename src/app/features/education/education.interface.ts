@@ -8,8 +8,8 @@ export interface Education {
 interface Degree {
   institution: string;
   degree: string;
-  honors: string | null;
-  details: string | null;
+  honors?: string;
+  details?: string;
   graduationYear: number;
   gpa: number;
 }

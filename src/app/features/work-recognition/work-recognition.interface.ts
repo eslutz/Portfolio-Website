@@ -1,6 +1,6 @@
 export enum RecognitionType {
-  Text = 'text',
-  Image = 'image'
+  Text = 'Text',
+  Image = 'Image',
 }
 
 export interface WorkRecognition {
@@ -17,7 +17,7 @@ interface Company {
 
 interface Recognition {
   type: RecognitionType;
-  date: string | null;
+  date?: string;
   description?: string;
   quote?: string;
   src?: string;

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, shareReplay } from 'rxjs';
+import { Observable } from 'rxjs';
+import { shareReplay, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,9 @@ export class PortfolioApiService {
       const request = this.http
         .post<T[]>(this.apiUrl, { component: component })
         .pipe(
+          tap((response) => {
+            console.log(`Response for component ${component}:`, response);
+          }),
           shareReplay({
             bufferSize: 1,
             windowTime: 24 * 60 * 60 * 1000, // 24 hours
