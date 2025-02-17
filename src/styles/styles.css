@@ -10,8 +10,8 @@
 
 @font-face {
   font-family: 'Mona Sans';
-  src:
-    url('../assets/fonts/Mona-Sans.woff2') format('woff2 supports variations'),
+  src: url('../assets/fonts/Mona-Sans.woff2')
+      format('woff2 supports variations'),
     url('../assets/fonts/Mona-Sans.woff2') format('woff2-variations');
   font-weight: 200 900;
   font-stretch: 75% 125%;
@@ -79,8 +79,7 @@ p {
 
 .heading-primary,
 .heading-secondary,
-.heading-tertiary,
-.heading-quaternary {
+.heading-tertiary {
   color: #767676;
   letter-spacing: -1px;
 }
@@ -102,16 +101,11 @@ p {
   border-bottom: 0.25rem solid;
 }
 
-.heading-tertiary,
-.heading-quaternary {
+.heading-tertiary {
   font-size: 3rem;
   font-weight: 400;
   line-height: 1.2;
   letter-spacing: 0px;
-}
-
-.heading-tertiary {
-  font-size: 3rem;
   padding: 0 0 2.5rem 0;
 }
 
@@ -221,15 +215,15 @@ p {
 
 /* UTILITIES */
 .u-center-text {
-	text-align: center;
+  text-align: center;
 }
 
 .u-margin-top-lg {
-	margin-top: 6rem;
+  margin-top: 6rem;
 }
 
 .u-margin-top-sm {
-	margin-top: 2.5rem;
+  margin-top: 2.5rem;
 }
 
 .u-margin-bottom-sm {
@@ -243,6 +237,41 @@ p {
 .u-flex-col {
   flex-direction: column;
   align-items: flex-start;
+}
+
+@keyframes ellipsis {
+  0% {
+    content: '';
+  }
+
+  25% {
+    content: '.';
+  }
+
+  50% {
+    content: '..';
+  }
+
+  75% {
+    content: '...';
+  }
+
+  100% {
+    content: '';
+  }
+}
+
+.loading,
+.loading-error {
+  font-size: 3rem;
+  font-weight: 200;
+  line-height: 1.2;
+}
+
+.loading::after {
+  content: '';
+  display: inline-block;
+  animation: ellipsis 2s infinite steps(1);
 }
 
 /****************/
@@ -310,6 +339,6 @@ p {
   }
 
   .u-margin-top-lg {
-	margin-top: 3rem;
+    margin-top: 3rem;
   }
 }
