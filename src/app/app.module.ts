@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -31,7 +32,7 @@ import { WorkRecognitionComponent } from './features/work-recognition/work-recog
     ProjectsComponent,
     WorkRecognitionComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule],
+  imports: [BrowserModule, AppRoutingModule, HttpClientModule],
   providers: [Title],
   bootstrap: [AppComponent],
 })

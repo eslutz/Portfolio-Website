@@ -7,7 +7,8 @@
         <ng-container *ngIf="recognition.type === RecognitionType.Text">
           <li class="list-item">
             <p>
-              {{ recognition.date }} &mdash; <span [innerHTML]="recognition.description"></span>
+              {{ recognition.date }} &mdash;
+              <span [innerHTML]="recognition.description"></span>
             </p>
           </li>
           <li class="list-item three-quarter-width" *ngIf="recognition.quote">
@@ -16,12 +17,17 @@
             <i class="fa-solid fa-quote-right list-icon-top"></i>
           </li>
         </ng-container>
-        <li class="list-item half-width" *ngIf="recognition.type === RecognitionType.Image">
+        <li
+          class="list-item half-width"
+          *ngIf="recognition.type === RecognitionType.Image">
           <div class="image-shadow">
-            <img class="image" [src]="recognition.src" [alt]="recognition.alt" />
+            <img
+              class="image"
+              [src]="recognition.src"
+              [alt]="recognition.alt" />
           </div>
         </li>
       </ng-container>
     </ul>
-    </ng-container>
+  </ng-container>
 </div>
