@@ -1,12 +1,16 @@
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using PortfolioApi.Models;
 
 namespace PortfolioApi;
@@ -16,15 +20,49 @@ public class GetCosmosData
   private readonly ILogger<GetCosmosData> _logger;
   private readonly CosmosClient? _cosmosClient;
   private readonly Container? _container;
+  private readonly TelemetryClient _telemetryClient;
 
-  public GetCosmosData(ILogger<GetCosmosData> logger, IConfiguration config)
+  private static object DeserializeItem(string itemJson, Component component)
+  {
+    return component switch
+    {
+      Component.Footer => JsonSerializer.Deserialize<Footer>(itemJson) ?? throw new JsonException($"Failed to deserialize Footer"),
+      Component.Recognition => JsonSerializer.Deserialize<WorkRecognition>(itemJson) ?? throw new JsonException($"Failed to deserialize WorkRecognition"),
+      Component.Project => JsonSerializer.Deserialize<Project>(itemJson) ?? throw new JsonException($"Failed to deserialize Project"),
+      Component.Home => JsonSerializer.Deserialize<Home>(itemJson) ?? throw new JsonException($"Failed to deserialize Home"),
+      Component.Education => JsonSerializer.Deserialize<Education>(itemJson) ?? throw new JsonException($"Failed to deserialize Education"),
+      Component.Certification => JsonSerializer.Deserialize<Certification>(itemJson) ?? throw new JsonException($"Failed to deserialize Certification"),
+      _ => throw new ArgumentException($"Unexpected component value: {component}")
+    };
+  }
+
+  public GetCosmosData(
+    ILogger<GetCosmosData> logger,
+    IConfiguration config,
+    TelemetryClient telemetryClient)
   {
     _logger = logger;
+    _telemetryClient = telemetryClient;
 
-    if (ValidateConfiguration(config, out var connectionString, out var databaseName, out var containerName))
+    try
     {
-      _cosmosClient = new CosmosClient(connectionString);
-      _container = _cosmosClient.GetContainer(databaseName, containerName);
+      if (ValidateConfiguration(config, out var cosmosConfig))
+      {
+        _cosmosClient = new CosmosClient(cosmosConfig.ConnectionString);
+        _container = _cosmosClient.GetContainer(cosmosConfig.DatabaseName, cosmosConfig.ContainerName);
+
+        _telemetryClient.TrackEvent("CosmosClientInitialized",
+          properties: new Dictionary<string, string>
+          {
+            { "DatabaseName", cosmosConfig.DatabaseName },
+            { "ContainerName", cosmosConfig.ContainerName }
+          });
+      }
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error initializing Cosmos client");
+      _telemetryClient.TrackException(ex);
     }
   }
 
@@ -32,6 +70,7 @@ public class GetCosmosData
   public async Task<IActionResult> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request)
   {
+    using var operation = _telemetryClient.StartOperation<RequestTelemetry>("GetCosmosData");
     _logger.LogInformation("GetCosmosData function processing request");
 
     if (_container is null || _cosmosClient is null)
@@ -78,33 +117,15 @@ public class GetCosmosData
     catch (Exception ex) when (ex is JsonException || ex is ArgumentException)
     {
       _logger.LogError(ex, "Error deserializing items");
+      _telemetryClient.TrackException(ex);
       return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Error fetching items");
+      _telemetryClient.TrackException(ex);
       return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
     }
-  }
-
-  private bool ValidateConfiguration(IConfiguration config, out string connectionString, out string databaseName, out string containerName)
-  {
-    connectionString = config["COSMOS_CONNECTION_STRING"] ?? string.Empty;
-    databaseName = config["COSMOS_DATABASE_NAME"] ?? string.Empty;
-    containerName = config["COSMOS_CONTAINER_NAME"] ?? string.Empty;
-
-    var missingValues = new List<string>();
-    if (string.IsNullOrEmpty(connectionString)) missingValues.Add("COSMOS_CONNECTION_STRING");
-    if (string.IsNullOrEmpty(databaseName)) missingValues.Add("COSMOS_DATABASE_NAME");
-    if (string.IsNullOrEmpty(containerName)) missingValues.Add("COSMOS_CONTAINER_NAME");
-
-    if (missingValues.Count != 0)
-    {
-      _logger.LogError("Missing required configuration values: {Values}", string.Join(", ", missingValues));
-      return false;
-    }
-
-    return true;
   }
 
   private async Task<List<dynamic>> FetchItemsAsync(QueryDefinition queryDefinition, Component component)
@@ -122,17 +143,59 @@ public class GetCosmosData
     return items;
   }
 
-  private static object DeserializeItem(string itemJson, Component component)
+  private bool ValidateConfiguration(IConfiguration config, out CosmosConfiguration cosmosConfig)
   {
-    return component switch
+    cosmosConfig = new CosmosConfiguration();
+    try
     {
-      Component.Footer => JsonSerializer.Deserialize<Footer>(itemJson) ?? throw new JsonException($"Failed to deserialize Footer"),
-      Component.Recognition => JsonSerializer.Deserialize<WorkRecognition>(itemJson) ?? throw new JsonException($"Failed to deserialize WorkRecognition"),
-      Component.Project => JsonSerializer.Deserialize<Project>(itemJson) ?? throw new JsonException($"Failed to deserialize Project"),
-      Component.Home => JsonSerializer.Deserialize<Home>(itemJson) ?? throw new JsonException($"Failed to deserialize Home"),
-      Component.Education => JsonSerializer.Deserialize<Education>(itemJson) ?? throw new JsonException($"Failed to deserialize Education"),
-      Component.Certification => JsonSerializer.Deserialize<Certification>(itemJson) ?? throw new JsonException($"Failed to deserialize Certification"),
-      _ => throw new ArgumentException($"Unexpected component value: {component}")
-    };
+      var credential = new DefaultAzureCredential();
+      var appConfigEndpoint = config["AzureAppConfigEndpoint"];
+      var keyVaultUri = config["KeyVaultUri"];
+
+      if (string.IsNullOrEmpty(appConfigEndpoint) || string.IsNullOrEmpty(keyVaultUri))
+      {
+        _logger.LogError("Missing Azure configuration endpoints");
+        return false;
+      }
+
+      // Get configuration from Azure App Configuration
+      var appConfigClient = new ConfigurationBuilder()
+          .AddAzureAppConfiguration(options =>
+          {
+            options.Connect(new Uri(appConfigEndpoint), credential)
+                   .ConfigureKeyVault(kv =>
+                   {
+                     kv.SetCredential(credential);
+                   });
+          })
+          .Build();
+
+      // Get database and container names from App Configuration
+      cosmosConfig.DatabaseName = appConfigClient["Cosmos:DatabaseName"]!;
+      cosmosConfig.ContainerName = appConfigClient["Cosmos:ContainerName"]!;
+
+      // Get connection string from Key Vault
+      var keyVaultClient = new SecretClient(new Uri(keyVaultUri), credential);
+      var secret = keyVaultClient.GetSecret("CosmosDbConnectionString");
+      cosmosConfig.ConnectionString = secret.Value.Value;
+
+      var missingValues = new List<string>();
+      if (string.IsNullOrEmpty(cosmosConfig.ConnectionString)) missingValues.Add("CosmosDbConnectionString");
+      if (string.IsNullOrEmpty(cosmosConfig.DatabaseName)) missingValues.Add("DatabaseName");
+      if (string.IsNullOrEmpty(cosmosConfig.ContainerName)) missingValues.Add("ContainerName");
+
+      if (missingValues.Count != 0)
+      {
+        _logger.LogError("Missing required configuration values: {Values}", string.Join(", ", missingValues));
+        return false;
+      }
+
+      return true;
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error retrieving configuration");
+      return false;
+    }
   }
 }
