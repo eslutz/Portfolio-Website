@@ -12,6 +12,12 @@ param swaName string
 @description('The location for the swa resource')
 param swaLocation string = 'eastus2'
 
+@description('The url for the repository')
+param repoUrl string
+
+@description('The branch for the repository')
+param repoBranch string
+
 @description('The name of the database to be created in Cosmos DB')
 param databaseName string = 'PortfolioDB'
 
@@ -65,6 +71,8 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
     location: swaLocation
     appConfigEndpoint: appConfig.outputs.appConfigEndpoint
     keyVaultUri: keyVault.outputs.keyVaultUri
+    repoUrl: repoUrl
+    repoBranch: repoBranch
   }
 }
 

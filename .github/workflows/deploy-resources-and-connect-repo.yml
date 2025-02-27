@@ -12,6 +12,10 @@ on:
 jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
 
@@ -32,14 +36,44 @@ jobs:
             resourceGroupName=${{ vars.AZURE_RESOURCE_GROUP }}
             swaName=${{ vars.AZURE_SWA_NAME }}
 
-      - name: Connect Static Web App to GitHub Repo
+      - name: Get SWA deployment token
+        id: get-swa-token
         run: |
-          az staticwebapp connect \
+          TOKEN=$(az staticwebapp secrets list \
             --name ${{ vars.AZURE_SWA_NAME }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --source "https://github.com/${{ github.repository }}" \
-            --branch main \
-            --token ${{ secrets.GITHUB_TOKEN }} \
-            --app-location "/" \
-            --api-location "api" \
-            --output-location "build"
+            --query "properties.apiKey" -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "swa_token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Add SWA token as repository secret
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const crypto = require('crypto');
+
+            // Get the public key for the repository
+            const { data: publicKeyInfo } = await github.rest.actions.getRepoPublicKey({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            // Encrypt the secret using the repository's public key
+            const messageBytes = Buffer.from(${{ steps.get-swa-token.outputs.swa_token }});
+            const keyBytes = Buffer.from(publicKeyInfo.key, 'base64');
+            const encryptedBytes = crypto.publicEncrypt(
+              {
+                key: keyBytes,
+                padding: crypto.constants.RSA_PKCS1_PADDING
+              },
+              messageBytes
+            );
+
+            // Create the secret
+            await github.rest.actions.createOrUpdateRepoSecret({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              secret_name: 'SWA_DEPLOYMENT_TOKEN',
+              encrypted_value: encryptedBytes.toString('base64'),
+              key_id: publicKeyInfo.key_id
+            });

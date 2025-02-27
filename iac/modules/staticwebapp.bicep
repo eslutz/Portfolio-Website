@@ -2,6 +2,8 @@ param name string
 param location string
 param appConfigEndpoint string
 param keyVaultUri string
+param repoUrl string
+param repoBranch string
 
 // Static Web App
 resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
@@ -13,7 +15,16 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
   }
   properties: {
     allowConfigFileUpdates: true
+    branch: repoBranch
+    buildProperties: {
+      apiLocation: 'api'
+      appLocation: '/'
+      outputLocation: 'dist/portfolio/browser'
+      skipGithubActionWorkflowGeneration: true
+    }
     enterpriseGradeCdnStatus: 'Disabled'
+    repositoryUrl: repoUrl
+    stagingEnvironmentPolicy: 'Enabled'
   }
 }
 
