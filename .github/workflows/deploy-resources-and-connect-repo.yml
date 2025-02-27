@@ -12,9 +12,6 @@ on:
 jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      secrets: write
     steps:
       - uses: actions/checkout@v4
 
@@ -49,7 +46,7 @@ jobs:
 
       - name: Add SWA token as repository secret
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REPO_SECRETS_TOKEN }}
           SWA_TOKEN: ${{ steps.get-swa-token.outputs.swa_token }}
         run: |
           gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
