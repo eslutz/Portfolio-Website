@@ -35,6 +35,8 @@ jobs:
             location=${{ vars.AZURE_REGION }}
             resourceGroupName=${{ vars.AZURE_RESOURCE_GROUP }}
             swaName=${{ vars.AZURE_SWA_NAME }}
+            repoUrl=${{ github.server_url }}/${{ github.repository }}
+            repoBranch=${{ github.ref_name }}
 
       - name: Get SWA deployment token
         id: get-swa-token
