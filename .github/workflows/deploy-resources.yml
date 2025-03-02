@@ -1,4 +1,4 @@
-name: Deploy and Connect Static Web App
+name: Deploy Porfolio Site Resources
 
 on:
   workflow_dispatch:
@@ -12,6 +12,9 @@ on:
 jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
+    outputs:
+      staticWebAppName: ${{ steps.deploy-bicep.outputs.staticWebAppName }}
+      resourceGroupName: ${{ steps.deploy-bicep.outputs.resourceGroupName }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,6 +24,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Bicep Template
+        id: deploy-bicep
         uses: azure/arm-deploy@v2
         with:
           scope: 'subscription'
@@ -29,17 +33,29 @@ jobs:
           template: ./iac/main.bicep
           parameters: >
             location=${{ vars.AZURE_REGION }}
-            resourceGroupName=${{ vars.AZURE_RESOURCE_GROUP }}
-            swaName=${{ vars.AZURE_SWA_NAME }}
+            appName=${{ vars.APP_NAME }}
             repoUrl=${{ github.server_url }}/${{ github.repository }}
             repoBranch=${{ github.ref_name }}
 
+      - name: Validate Bicep Outputs
+        run: |
+          echo "Static Web App Name: ${{ steps.deploy-bicep.outputs.staticWebAppName }}"
+          echo "Resource Group Name: ${{ steps.deploy-bicep.outputs.resourceGroupName }}"
+          echo "Static Web App Hostname: ${{ steps.deploy-bicep.outputs.staticWebAppDefaultHostname }}"
+          echo "Cosmos DB Endpoint: ${{ steps.deploy-bicep.outputs.cosmosDbEndpoint }}"
+          echo "App Config Endpoint: ${{ steps.deploy-bicep.outputs.appConfigEndpoint }}"
+          echo "Key Vault URI: ${{ steps.deploy-bicep.outputs.keyVaultUri }}"
+
+  set-deployment-token:
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    steps:
       - name: Get SWA deployment token
         id: get-swa-token
         run: |
           TOKEN=$(az staticwebapp secrets list \
-            --name ${{ vars.AZURE_SWA_NAME }} \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --name ${{ needs.deploy-infrastructure.outputs.staticWebAppName }} \
+            --resource-group ${{ needs.deploy-infrastructure.outputs.resourceGroupName }} \
             --query "properties.apiKey" -o tsv)
           echo "::add-mask::$TOKEN"
           echo "swa_token=$TOKEN" >> $GITHUB_OUTPUT
@@ -50,3 +66,7 @@ jobs:
           SWA_TOKEN: ${{ steps.get-swa-token.outputs.swa_token }}
         run: |
           gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
+
+  deploy-portfolio:
+    needs: set-deployment-token
+    uses: ./.github/workflows/deploy-portfolio-site.yml

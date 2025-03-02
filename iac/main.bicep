@@ -1,28 +1,33 @@
 targetScope = 'subscription'
 
 @description('The location for all resources')
-param location string
-
-@description('The name of the resource group')
-param resourceGroupName string
-
-@description('The name of the static web app')
-param swaName string
-
+param location string = 'eastus'
 @description('The location for the swa resource')
 param swaLocation string = 'eastus2'
-
+@description('The name of the application')
+param appName string
 @description('The url for the repository')
 param repoUrl string
-
 @description('The branch for the repository')
 param repoBranch string
 
-@description('The name of the database to be created in Cosmos DB')
-param databaseName string = 'PortfolioDB'
-
-@description('The name of the container to be created in Cosmos DB')
-param containerName string = 'Portfolio-Content'
+@description('The name of the resource group')
+var resourceGroupName = '${appName}-resource-group'
+@description('The properties for Cosmos DB')
+var cosmos = {
+  accountName: replace('${appName}dbaccount', '-', '')
+  dbName: '${appName}-db'
+  containerName: '${appName}-container'
+}
+@description('The name of the Key Vault')
+var keyVaultName = '${appName}-key-vault'
+@description('The properties for Application Insights')
+var appInsights = {
+  workspaceName: '${appName}-log-analytics-workspace'
+  name: '${appName}-app-insights'
+}
+@description('The name of the static web app')
+var swaName = '${appName}-swa'
 
 // Resource Group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -36,8 +41,20 @@ module cosmosDb 'modules/cosmosdb.bicep' = {
   name: 'cosmosDbDeploy'
   params: {
     location: location
-    databaseName: databaseName
-    containerName: containerName
+    name: cosmos.accountName
+    databaseName: cosmos.dbName
+    containerName: cosmos.containerName
+  }
+}
+
+// App Insights Resources
+module applicationInsights 'modules/appInsights.bicep' = {
+  scope: resourceGroup
+  name: 'appInsightsDeploy'
+  params: {
+    location: swaLocation
+    workspaceName: appInsights.workspaceName
+    appInsightsName: appInsights.name
   }
 }
 
@@ -47,7 +64,9 @@ module keyVault 'modules/keyvault.bicep' = {
   name: 'keyVaultDeploy'
   params: {
     location: location
+    name: keyVaultName
     cosmosDbAccountId: cosmosDb.outputs.cosmosDbAccountId
+    appInsightsId: applicationInsights.outputs.appInsightsId
   }
 }
 
@@ -57,8 +76,8 @@ module appConfig 'modules/appconfig.bicep' = {
   name: 'appConfigDeploy'
   params: {
     location: location
-    databaseName: databaseName
-    containerName: containerName
+    databaseName: cosmos.dbName
+    containerName: cosmos.containerName
   }
 }
 
@@ -69,14 +88,16 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
   params: {
     name: swaName
     location: swaLocation
-    appConfigEndpoint: appConfig.outputs.appConfigEndpoint
-    keyVaultUri: keyVault.outputs.keyVaultUri
     repoUrl: repoUrl
     repoBranch: repoBranch
+    appConfigEndpoint: appConfig.outputs.appConfigEndpoint
+    keyVaultUri: keyVault.outputs.keyVaultUri
   }
 }
 
 // Outputs
+output staticWebAppName string = swaName
+output resourceGroupName string = resourceGroupName
 output staticWebAppDefaultHostname string = staticWebApp.outputs.staticWebAppDefaultHostname
 output cosmosDbEndpoint string = cosmosDb.outputs.cosmosDbEndpoint
 output appConfigEndpoint string = appConfig.outputs.appConfigEndpoint

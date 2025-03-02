@@ -1,15 +1,11 @@
-@description('The name of the database to be created in Cosmos DB')
-param databaseName string
-
-@description('The name of the container to be created in Cosmos DB')
-param containerName string
-
-@description('The location for the Cosmos DB resources')
 param location string
+param name string
+param databaseName string
+param containerName string
 
 // Cosmos DB Account
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
-  name: 'portfoliositedb'
+  name: name
   location: location
   kind: 'GlobalDocumentDB'
   properties: {
