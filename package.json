@@ -22,7 +22,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "upd-pkg-ver": "npm update --save",
-    "upd-pkg-mjr-ver": "npm run npm-check-updates"
+    "upd-pkg-mjr-ver": "npm run npm-check-updates",
+    "swa:start": "npm run build && dotnet build && swa start ./dist/portfolio/browser --api-location=./api --verbose"
   },
   "private": true,
   "dependencies": {
