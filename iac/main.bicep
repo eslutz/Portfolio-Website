@@ -48,7 +48,7 @@ module cosmosDb 'modules/cosmosdb.bicep' = {
 }
 
 // App Insights Resources
-module applicationInsights 'modules/appInsights.bicep' = {
+module applicationInsights 'modules/appinsights.bicep' = {
   scope: resourceGroup
   name: 'appInsightsDeploy'
   params: {
