@@ -33,12 +33,12 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           region: ${{ vars.AZURE_REGION }}
           template: ./iac/main.bicep
-          parameters: >
+          parameters: >-
             location=${{ vars.AZURE_REGION }}
             appName=${{ vars.APP_NAME }}
             repoUrl=${{ github.server_url }}/${{ github.repository }}
             repoBranch=${{ github.ref_name }}
-            roleAssignments="${{ vars.AZURE_ROLE_ASSIGNMENTS || '[]' }}"
+            roleAssignments=${{ toJSON(vars.AZURE_ROLE_ASSIGNMENTS || '[]') }}
 
       - name: Get SWA deployment token
         id: get-swa-token
