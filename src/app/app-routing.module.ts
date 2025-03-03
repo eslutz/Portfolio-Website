@@ -6,17 +6,20 @@ import { ProjectsComponent } from './features/projects/projects.component';
 import { AchievementsComponent } from './features/achievements/achievements.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent, data: { title: 'Portfolio' } },
   {
-    path: 'achievements',
-    component: AchievementsComponent,
-    data: { title: 'Achievements' },
+    path: '',
+    component: HomeComponent,
+    data: { title: 'Home' },
   },
   {
     path: 'projects',
     component: ProjectsComponent,
     data: { title: 'Projects' },
+  },
+  {
+    path: 'achievements',
+    component: AchievementsComponent,
+    data: { title: 'Achievements' },
   },
   { path: '**', component: ErrorComponent, data: { title: 'Error' } },
 ];

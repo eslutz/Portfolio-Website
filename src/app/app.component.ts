@@ -6,10 +6,10 @@ import { filter, map } from 'rxjs';
 declare const gtag: Function;
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
-    standalone: false
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  standalone: false,
 })
 export class AppComponent {
   title = 'Portfolio';
@@ -40,12 +40,11 @@ export class AppComponent {
         }
       });
 
-      this.router.events
-        .subscribe((event) => {
-          if (event instanceof NavigationEnd) {
-            gtag('config', 'G-9YBST1VWZJ', { 'page_path': event.urlAfterRedirects });
-          }
-      });
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        gtag('config', 'G-9YBST1VWZJ', { page_path: event.urlAfterRedirects });
+      }
+    });
   }
 
   @HostListener('window:scroll', ['$event'])

@@ -1,21 +1,21 @@
 <header class="nav">
   <div class="nav-container" (outsideClick)="outsideMobileNavClick($event)">
-    <a class="img-link" routerLink="/home">
+    <a class="img-link" routerLink="/">
       <img
         class="nav-image"
         src="assets/images/computer_logo.png"
-        alt="Computer Logo"
-      />
+        alt="Computer Logo" />
     </a>
     <nav class="main-nav">
       <ul class="main-nav-list">
         <li>
           <a
             class="nav-link"
-            routerLink="/home"
+            routerLink="/"
             routerLinkActive="active-link"
             (click)="mobileNavClick()"
-            >Home</a>
+            >Home</a
+          >
         </li>
         <li>
           <a
@@ -23,7 +23,8 @@
             routerLink="/projects"
             routerLinkActive="active-link"
             (click)="mobileNavClick()"
-            >Projects</a>
+            >Projects</a
+          >
         </li>
         <li>
           <a
@@ -31,7 +32,8 @@
             routerLink="/achievements"
             routerLinkActive="active-link"
             (click)="mobileNavClick()"
-            >Achievements</a>
+            >Achievements</a
+          >
         </li>
       </ul>
     </nav>
