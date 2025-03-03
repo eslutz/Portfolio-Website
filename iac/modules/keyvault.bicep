@@ -49,4 +49,5 @@ resource appInsightsInstrumentationKey 'Microsoft.KeyVault/vaults/secrets@2023-0
   }
 }
 
+output keyVaultId string = keyVault.id
 output keyVaultUri string = keyVault.properties.vaultUri

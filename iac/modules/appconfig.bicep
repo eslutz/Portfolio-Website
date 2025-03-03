@@ -17,7 +17,7 @@ resource appConfig 'Microsoft.AppConfiguration/configurationStores@2023-03-01' =
 // App Configuration Values
 resource databaseNameConfig 'Microsoft.AppConfiguration/configurationStores/keyValues@2023-03-01' = {
   parent: appConfig
-  name: 'CosmosDatabase'
+  name: 'COSMOS_DATABASE'
   properties: {
     value: databaseName
   }
@@ -25,7 +25,7 @@ resource databaseNameConfig 'Microsoft.AppConfiguration/configurationStores/keyV
 
 resource containerNameConfig 'Microsoft.AppConfiguration/configurationStores/keyValues@2023-03-01' = {
   parent: appConfig
-  name: 'CosmosContainer'
+  name: 'COSMOS_CONTAINER'
   properties: {
     value: containerName
   }

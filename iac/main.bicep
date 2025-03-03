@@ -10,6 +10,13 @@ param appName string
 param repoUrl string
 @description('The branch for the repository')
 param repoBranch string
+@description('The list of role assignments')
+param roleAssignments [
+  {
+    principalId: string
+    roleDefinitionId: string
+  }
+]
 
 @description('The name of the resource group')
 var resourceGroupName = '${appName}-resource-group'
@@ -92,6 +99,15 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
     repoBranch: repoBranch
     appConfigEndpoint: appConfig.outputs.appConfigEndpoint
     keyVaultUri: keyVault.outputs.keyVaultUri
+  }
+}
+
+// Role Assignment Resources
+module rbac 'modules/rbac.bicep' = {
+  scope: resourceGroup
+  name: 'rbacDeploy'
+  params: {
+    roleAssignments: roleAssignments
   }
 }
 

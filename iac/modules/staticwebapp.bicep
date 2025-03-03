@@ -34,7 +34,7 @@ resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2022-09-01' = {
   name: 'appsettings'
   properties: {
     APP_CONFIG_ENDPOINT: appConfigEndpoint
-    KEY_VAULT_ENDPOINT: keyVaultUri
+    COSMOS_DB_CONNECTION_STRING: '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/CosmosDbConnectionString/)'
     APPLICATIONINSIGHTS_CONNECTION_STRING: '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/AppInsightsConnectionString/)'
     APPINSIGHTS_INSTRUMENTATIONKEY: '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/AppInsightsInstrumentationKey/)'
   }

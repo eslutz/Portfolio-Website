@@ -1,7 +1,6 @@
 using System.Net;
 using System.Text.Json;
 using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
@@ -150,15 +149,10 @@ public class GetCosmosData
     {
       var credential = new DefaultAzureCredential();
       var appConfigEndpoint = config["APP_CONFIG_ENDPOINT"];
-      var keyVaultUri = config["KEY_VAULT_ENDPOINT"];
 
-      var missingEndpoints = new List<string>();
-      if (string.IsNullOrEmpty(appConfigEndpoint)) missingEndpoints.Add("APP_CONFIG_ENDPOINT");
-      if (string.IsNullOrEmpty(keyVaultUri)) missingEndpoints.Add("KEY_VAULT_ENDPOINT");
-
-      if (missingEndpoints.Count > 0)
+      if (string.IsNullOrEmpty(appConfigEndpoint))
       {
-        _logger.LogError("Missing Azure configuration endpoints: {MissingEndpoints}", string.Join(", ", missingEndpoints));
+        _logger.LogError("Missing APP_CONFIG_ENDPOINT configuration");
         return false;
       }
 
@@ -166,27 +160,21 @@ public class GetCosmosData
       var appConfigClient = new ConfigurationBuilder()
           .AddAzureAppConfiguration(options =>
           {
-            options.Connect(new Uri(appConfigEndpoint!), credential)
-                   .ConfigureKeyVault(kv =>
-                   {
-                     kv.SetCredential(credential);
-                   });
+            options.Connect(new Uri(appConfigEndpoint), credential);
           })
           .Build();
 
       // Get database and container names from App Configuration
-      cosmosConfig.DatabaseName = appConfigClient["CosmosDatabase"]!;
-      cosmosConfig.ContainerName = appConfigClient["CosmosContainer"]!;
+      cosmosConfig.DatabaseName = appConfigClient["COSMOS_DATABASE"]!;
+      cosmosConfig.ContainerName = appConfigClient["COSMOS_CONTAINER"]!;
 
-      // Get connection string from Key Vault
-      var keyVaultClient = new SecretClient(new Uri(keyVaultUri!), credential);
-      var secret = keyVaultClient.GetSecret("CosmosDbConnectionString");
-      cosmosConfig.ConnectionString = secret.Value.Value;
+      // Get connection string directly from environment (injected by Static Web App from Key Vault)
+      cosmosConfig.ConnectionString = config["COSMOS_DB_CONNECTION_STRING"]!;
 
       var missingValues = new List<string>();
-      if (string.IsNullOrEmpty(cosmosConfig.ConnectionString)) missingValues.Add("CosmosDbConnectionString (from Key Vault)");
-      if (string.IsNullOrEmpty(cosmosConfig.DatabaseName)) missingValues.Add("CosmosDatabase (from App Configuration)");
-      if (string.IsNullOrEmpty(cosmosConfig.ContainerName)) missingValues.Add("CosmosContainer (from App Configuration)");
+      if (string.IsNullOrEmpty(cosmosConfig.ConnectionString)) missingValues.Add("COSMOS_DB_CONNECTION_STRING");
+      if (string.IsNullOrEmpty(cosmosConfig.DatabaseName)) missingValues.Add("COSMOS_DATABASE (from App Configuration)");
+      if (string.IsNullOrEmpty(cosmosConfig.ContainerName)) missingValues.Add("COSMOS_CONTAINER (from App Configuration)");
 
       if (missingValues.Count != 0)
       {

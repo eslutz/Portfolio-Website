@@ -2,6 +2,7 @@ param location string
 param workspaceName string = 'appInsightsWorkspace'
 param appInsightsName string = 'appInsights'
 
+// Log Analytics Workspace
 resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: workspaceName
   location: location
@@ -14,6 +15,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   }
 }
 
+// Application Insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightsName
   location: location
