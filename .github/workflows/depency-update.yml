@@ -1,7 +1,7 @@
 #########################################################################################
 ##  UPDATE PROJECT DEPENDENCIES
 #########################################################################################
-name: Update Project Dependencies
+name: Update Portfolio Site Dependencies
 
 #########################################################################################
 ##  WORKFLOW TRIGGER
@@ -44,3 +44,9 @@ jobs:
           git add --update
           git commit -m "updated project dependencies" || exit 0
           git push --force
+
+  deploy-portfolio:
+    needs: UpdateNpmDependencies
+    uses: ./.github/workflows/deploy-site.yml
+    secrets:
+      SWA_DEPLOYMENT_TOKEN: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}

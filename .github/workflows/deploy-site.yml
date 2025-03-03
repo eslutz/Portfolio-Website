@@ -1,6 +1,9 @@
 name: Deploy Portfolio Site
 on:
   workflow_call:
+    secrets:
+      SWA_DEPLOYMENT_TOKEN:
+        required: true
   push:
     branches:
       - main
