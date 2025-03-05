@@ -2,8 +2,10 @@ param location string
 param name string
 param repoUrl string
 param repoBranch string
-param appConfigEndpoint string
-param keyVaultUri string
+param cosmosDbAccountId string
+param cosmosDbName string
+param cosmosContainerName string
+param appInsightsId string
 
 // Static Web App
 resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
@@ -33,10 +35,11 @@ resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2022-09-01' = {
   parent: staticWebApp
   name: 'appsettings'
   properties: {
-    APP_CONFIG_ENDPOINT: appConfigEndpoint
-    COSMOS_DB_CONNECTION_STRING: '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/CosmosDbConnectionString/)'
-    APPLICATIONINSIGHTS_CONNECTION_STRING: '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/AppInsightsConnectionString/)'
-    APPINSIGHTS_INSTRUMENTATIONKEY: '@Microsoft.KeyVault(SecretUri=${keyVaultUri}secrets/AppInsightsInstrumentationKey/)'
+    COSMOS_DB_CONNECTION_STRING: listConnectionStrings(cosmosDbAccountId, '2023-04-15').connectionStrings[0].connectionString
+    COSMOS_DATABASE: cosmosDbName
+    COSMOS_CONTAINER: cosmosContainerName
+    APPLICATIONINSIGHTS_CONNECTION_STRING: reference(appInsightsId, '2020-02-02').ConnectionString
+    APPINSIGHTS_INSTRUMENTATIONKEY: reference(appInsightsId, '2020-02-02').InstrumentationKey
   }
 }
 

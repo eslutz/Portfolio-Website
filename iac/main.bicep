@@ -10,13 +10,6 @@ param appName string
 param repoUrl string
 @description('The branch for the repository')
 param repoBranch string
-@description('The list of role assignments')
-param roleAssignments [
-  {
-    principalId: string
-    roleDefinitionId: string
-  }
-]
 
 @description('The name of the resource group')
 var resourceGroupName = '${appName}-resource-group'
@@ -26,8 +19,6 @@ var cosmos = {
   dbName: '${appName}-db'
   containerName: '${appName}-container'
 }
-@description('The name of the Key Vault')
-var keyVaultName = '${appName}-key-vault'
 @description('The properties for Application Insights')
 var appInsights = {
   workspaceName: '${appName}-log-analytics-workspace'
@@ -65,29 +56,6 @@ module applicationInsights 'modules/appinsights.bicep' = {
   }
 }
 
-// Key Vault Resources
-module keyVault 'modules/keyvault.bicep' = {
-  scope: resourceGroup
-  name: 'keyVaultDeploy'
-  params: {
-    location: location
-    name: keyVaultName
-    cosmosDbAccountId: cosmosDb.outputs.cosmosDbAccountId
-    appInsightsId: applicationInsights.outputs.appInsightsId
-  }
-}
-
-// App Configuration Resources
-module appConfig 'modules/appconfig.bicep' = {
-  scope: resourceGroup
-  name: 'appConfigDeploy'
-  params: {
-    location: location
-    databaseName: cosmos.dbName
-    containerName: cosmos.containerName
-  }
-}
-
 // Static Web App Resources
 module staticWebApp 'modules/staticwebapp.bicep' = {
   scope: resourceGroup
@@ -97,17 +65,10 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
     location: swaLocation
     repoUrl: repoUrl
     repoBranch: repoBranch
-    appConfigEndpoint: appConfig.outputs.appConfigEndpoint
-    keyVaultUri: keyVault.outputs.keyVaultUri
-  }
-}
-
-// Role Assignment Resources
-module rbac 'modules/rbac.bicep' = {
-  scope: resourceGroup
-  name: 'rbacDeploy'
-  params: {
-    roleAssignments: roleAssignments
+    cosmosDbAccountId: cosmosDb.outputs.cosmosDbAccountId
+    cosmosDbName: cosmos.dbName
+    cosmosContainerName: cosmos.containerName
+    appInsightsId: applicationInsights.outputs.appInsightsId
   }
 }
 
@@ -116,5 +77,3 @@ output staticWebAppName string = swaName
 output resourceGroupName string = resourceGroupName
 output staticWebAppDefaultHostname string = staticWebApp.outputs.staticWebAppDefaultHostname
 output cosmosDbEndpoint string = cosmosDb.outputs.cosmosDbEndpoint
-output appConfigEndpoint string = appConfig.outputs.appConfigEndpoint
-output keyVaultUri string = keyVault.outputs.keyVaultUri
