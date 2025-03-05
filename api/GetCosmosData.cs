@@ -1,8 +1,6 @@
 using System.Net;
 using System.Text.Json;
 using Azure.Identity;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
@@ -19,7 +17,6 @@ public class GetCosmosData
   private readonly ILogger<GetCosmosData> _logger;
   private readonly CosmosClient? _cosmosClient;
   private readonly Container? _container;
-  private readonly TelemetryClient _telemetryClient;
 
   private static object DeserializeItem(string itemJson, Component component)
   {
@@ -37,11 +34,9 @@ public class GetCosmosData
 
   public GetCosmosData(
     ILogger<GetCosmosData> logger,
-    IConfiguration config,
-    TelemetryClient telemetryClient)
+    IConfiguration config)
   {
     _logger = logger;
-    _telemetryClient = telemetryClient;
 
     try
     {
@@ -49,19 +44,11 @@ public class GetCosmosData
       {
         _cosmosClient = new CosmosClient(cosmosConfig.ConnectionString);
         _container = _cosmosClient.GetContainer(cosmosConfig.DatabaseName, cosmosConfig.ContainerName);
-
-        _telemetryClient.TrackEvent("CosmosClientInitialized",
-          properties: new Dictionary<string, string>
-          {
-            { "DatabaseName", cosmosConfig.DatabaseName },
-            { "ContainerName", cosmosConfig.ContainerName }
-          });
       }
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Error initializing Cosmos client");
-      _telemetryClient.TrackException(ex);
     }
   }
 
@@ -69,7 +56,6 @@ public class GetCosmosData
   public async Task<IActionResult> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request)
   {
-    using var operation = _telemetryClient.StartOperation<RequestTelemetry>("GetCosmosData");
     _logger.LogInformation("GetCosmosData function processing request");
 
     if (_container is null || _cosmosClient is null)
@@ -100,8 +86,7 @@ public class GetCosmosData
       var queryDefinition = new QueryDefinition("SELECT * FROM c WHERE c.component = @componentName")
         .WithParameter("@componentName", requestBody.Component);
 
-      List<dynamic> items;
-      items = await FetchItemsAsync(queryDefinition, component);
+      var items = await FetchItemsAsync(queryDefinition, component);
 
       if (items.Count == 0)
       {
@@ -116,13 +101,11 @@ public class GetCosmosData
     catch (Exception ex) when (ex is JsonException || ex is ArgumentException)
     {
       _logger.LogError(ex, "Error deserializing items");
-      _telemetryClient.TrackException(ex);
       return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Error fetching items");
-      _telemetryClient.TrackException(ex);
       return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
     }
   }
