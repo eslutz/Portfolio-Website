@@ -1,13 +1,11 @@
 using System.Net;
 using System.Text.Json;
-using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using PortfolioApi.Models;
 
 namespace PortfolioApi;
@@ -17,20 +15,6 @@ public class GetCosmosData
   private readonly ILogger<GetCosmosData> _logger;
   private readonly CosmosClient? _cosmosClient;
   private readonly Container? _container;
-
-  private static object DeserializeItem(string itemJson, Component component)
-  {
-    return component switch
-    {
-      Component.Footer => JsonSerializer.Deserialize<Footer>(itemJson) ?? throw new JsonException($"Failed to deserialize Footer"),
-      Component.Recognition => JsonSerializer.Deserialize<WorkRecognition>(itemJson) ?? throw new JsonException($"Failed to deserialize WorkRecognition"),
-      Component.Project => JsonSerializer.Deserialize<Project>(itemJson) ?? throw new JsonException($"Failed to deserialize Project"),
-      Component.Home => JsonSerializer.Deserialize<Home>(itemJson) ?? throw new JsonException($"Failed to deserialize Home"),
-      Component.Education => JsonSerializer.Deserialize<Education>(itemJson) ?? throw new JsonException($"Failed to deserialize Education"),
-      Component.Certification => JsonSerializer.Deserialize<Certification>(itemJson) ?? throw new JsonException($"Failed to deserialize Certification"),
-      _ => throw new ArgumentException($"Unexpected component value: {component}")
-    };
-  }
 
   public GetCosmosData(
     ILogger<GetCosmosData> logger,
@@ -110,6 +94,30 @@ public class GetCosmosData
     }
   }
 
+  private bool ValidateConfiguration(IConfiguration config, out CosmosConfiguration cosmosConfig)
+  {
+    cosmosConfig = new CosmosConfiguration();
+    try
+    {
+      // Get connection string, database, and container names from App Configuration
+      cosmosConfig.ConnectionString = config["COSMOS_DB_CONNECTION_STRING"] ?? throw new InvalidOperationException("COSMOS_DB_CONNECTION_STRING is not configured");
+      cosmosConfig.DatabaseName = config["COSMOS_DATABASE"] ?? throw new InvalidOperationException("COSMOS_DATABASE is not configured");
+      cosmosConfig.ContainerName = config["COSMOS_CONTAINER"] ?? throw new InvalidOperationException("COSMOS_CONTAINER is not configured");
+
+      return true;
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error retrieving configuration: {ErrorMessage}", ex.Message);
+      if (ex.InnerException != null)
+      {
+        _logger.LogError("Inner exception: {InnerErrorMessage}", ex.InnerException.Message);
+      }
+
+      return false;
+    }
+  }
+
   private async Task<List<dynamic>> FetchItemsAsync(QueryDefinition queryDefinition, Component component)
   {
     var items = new List<dynamic>();
@@ -125,56 +133,17 @@ public class GetCosmosData
     return items;
   }
 
-  private bool ValidateConfiguration(IConfiguration config, out CosmosConfiguration cosmosConfig)
+  private static object DeserializeItem(string itemJson, Component component)
   {
-    cosmosConfig = new CosmosConfiguration();
-    try
+    return component switch
     {
-      var credential = new DefaultAzureCredential();
-      var appConfigEndpoint = config["APP_CONFIG_ENDPOINT"];
-
-      if (string.IsNullOrEmpty(appConfigEndpoint))
-      {
-        _logger.LogError("Missing APP_CONFIG_ENDPOINT configuration");
-        return false;
-      }
-
-      // Get configuration from Azure App Configuration
-      var appConfigClient = new ConfigurationBuilder()
-          .AddAzureAppConfiguration(options =>
-          {
-            options.Connect(new Uri(appConfigEndpoint), credential);
-          })
-          .Build();
-
-      // Get database and container names from App Configuration
-      cosmosConfig.DatabaseName = appConfigClient["COSMOS_DATABASE"]!;
-      cosmosConfig.ContainerName = appConfigClient["COSMOS_CONTAINER"]!;
-
-      // Get connection string directly from environment (injected by Static Web App from Key Vault)
-      cosmosConfig.ConnectionString = config["COSMOS_DB_CONNECTION_STRING"]!;
-
-      var missingValues = new List<string>();
-      if (string.IsNullOrEmpty(cosmosConfig.ConnectionString)) missingValues.Add("COSMOS_DB_CONNECTION_STRING");
-      if (string.IsNullOrEmpty(cosmosConfig.DatabaseName)) missingValues.Add("COSMOS_DATABASE (from App Configuration)");
-      if (string.IsNullOrEmpty(cosmosConfig.ContainerName)) missingValues.Add("COSMOS_CONTAINER (from App Configuration)");
-
-      if (missingValues.Count != 0)
-      {
-        _logger.LogError("Missing required configuration values: {Values}", string.Join(", ", missingValues));
-        return false;
-      }
-
-      return true;
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Error retrieving configuration: {ErrorMessage}", ex.Message);
-      if (ex.InnerException != null)
-      {
-        _logger.LogError("Inner exception: {InnerErrorMessage}", ex.InnerException.Message);
-      }
-      return false;
-    }
+      Component.Footer => JsonSerializer.Deserialize<Footer>(itemJson) ?? throw new JsonException($"Failed to deserialize Footer"),
+      Component.Recognition => JsonSerializer.Deserialize<WorkRecognition>(itemJson) ?? throw new JsonException($"Failed to deserialize WorkRecognition"),
+      Component.Project => JsonSerializer.Deserialize<Project>(itemJson) ?? throw new JsonException($"Failed to deserialize Project"),
+      Component.Home => JsonSerializer.Deserialize<Home>(itemJson) ?? throw new JsonException($"Failed to deserialize Home"),
+      Component.Education => JsonSerializer.Deserialize<Education>(itemJson) ?? throw new JsonException($"Failed to deserialize Education"),
+      Component.Certification => JsonSerializer.Deserialize<Certification>(itemJson) ?? throw new JsonException($"Failed to deserialize Certification"),
+      _ => throw new ArgumentException($"Unexpected component value: {component}")
+    };
   }
 }
