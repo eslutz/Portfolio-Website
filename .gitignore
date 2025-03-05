@@ -47,6 +47,9 @@ Thumbs.db
 # Azure Functions localsettings file
 local.settings.json
 
+# Azure Bicep parameters file
+main.parameters.json
+
 # User-specific files
 *.suo
 *.user
