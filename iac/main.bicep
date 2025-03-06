@@ -10,12 +10,15 @@ param appName string
 param repoUrl string
 @description('The branch for the repository')
 param repoBranch string
+@description('The name of the existing Cosmos DB account')
+param existingCosmosDbAccountName string
+@description('The resource group of the existing Cosmos DB account')
+param existingCosmosDbResourceGroup string
 
 @description('The name of the resource group')
 var resourceGroupName = '${appName}-resource-group'
 @description('The properties for Cosmos DB')
 var cosmos = {
-  accountName: replace('${appName}dbaccount', '-', '')
   dbName: '${appName}-db'
   containerName: '${appName}-container'
 }
@@ -33,13 +36,22 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: location
 }
 
+// Reference existing Cosmos DB Account
+resource existingCosmosDbRG 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+  name: existingCosmosDbResourceGroup
+}
+
+resource existingCosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' existing = {
+  scope: existingCosmosDbRG
+  name: existingCosmosDbAccountName
+}
+
 // Cosmos DB Resources
 module cosmosDb 'modules/cosmosdb.bicep' = {
-  scope: resourceGroup
+  scope: existingCosmosDbRG
   name: 'cosmosDbDeploy'
   params: {
-    location: location
-    name: cosmos.accountName
+    existingAccountName: existingCosmosDbAccountName
     databaseName: cosmos.dbName
     containerName: cosmos.containerName
   }
@@ -65,7 +77,7 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
     location: swaLocation
     repoUrl: repoUrl
     repoBranch: repoBranch
-    cosmosDbAccountId: cosmosDb.outputs.cosmosDbAccountId
+    cosmosDbAccountId: existingCosmosDbAccount.id
     cosmosDbName: cosmos.dbName
     cosmosContainerName: cosmos.containerName
     appInsightsId: applicationInsights.outputs.appInsightsId
@@ -76,4 +88,4 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
 output staticWebAppName string = swaName
 output resourceGroupName string = resourceGroupName
 output staticWebAppDefaultHostname string = staticWebApp.outputs.staticWebAppDefaultHostname
-output cosmosDbEndpoint string = cosmosDb.outputs.cosmosDbEndpoint
+output cosmosDbEndpoint string = existingCosmosDbAccount.properties.documentEndpoint

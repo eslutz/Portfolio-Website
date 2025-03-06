@@ -38,6 +38,8 @@ jobs:
             appName=${{ vars.APP_NAME }}
             repoUrl=${{ github.server_url }}/${{ github.repository }}
             repoBranch=${{ github.ref_name }}
+            existingCosmosDbAccountName=${{ vars.COSMOS_ACCOUNT_NAME }}
+            existingCosmosDbResourceGroup=${{ vars.COSMOS_RESOURCE_GROUP }}
 
       - name: Get SWA deployment token
         id: get-swa-token
