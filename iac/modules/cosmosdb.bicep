@@ -10,7 +10,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   kind: 'GlobalDocumentDB'
   properties: {
     databaseAccountOfferType: 'Standard'
-    enableFreeTier: true
+    // enableFreeTier: true
     capabilities: [
       {
         name: 'EnableServerless'
