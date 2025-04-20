@@ -30,23 +30,24 @@ var appInsights = {
 @description('The name of the static web app')
 var swaName = '${appName}-swa'
 
-// Resource Group
+// Create Resource Group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: location
 }
 
-// Reference existing Cosmos DB Account
+// Reference existing Cosmos DB Resource Group
 resource existingCosmosDbRG 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   name: existingCosmosDbResourceGroup
 }
 
+// Reference existing Cosmos DB Account
 resource existingCosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' existing = {
   scope: existingCosmosDbRG
   name: existingCosmosDbAccountName
 }
 
-// Cosmos DB Resources
+// Create Cosmos DB Resources (container and database) in existing CosmosDB Account
 module cosmosDb 'modules/cosmosdb.bicep' = {
   scope: existingCosmosDbRG
   name: 'cosmosDbDeploy'
@@ -57,7 +58,7 @@ module cosmosDb 'modules/cosmosdb.bicep' = {
   }
 }
 
-// App Insights Resources
+// Create App Insights Resources
 module applicationInsights 'modules/appinsights.bicep' = {
   scope: resourceGroup
   name: 'appInsightsDeploy'
@@ -68,7 +69,7 @@ module applicationInsights 'modules/appinsights.bicep' = {
   }
 }
 
-// Static Web App Resources
+// Create Static Web App Resources
 module staticWebApp 'modules/staticwebapp.bicep' = {
   scope: resourceGroup
   name: 'staticWebAppDeploy'

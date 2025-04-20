@@ -1,0 +1,106 @@
+name: Set Custom Domain
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-custom-domain:
+    runs-on: ubuntu-latest
+    env:
+      # Use repository variables with fallbacks if not set
+      STATIC_WEB_APP_NAME: ${{ vars.APP_NAME }}-swa
+      RESOURCE_GROUP_NAME: ${{ vars.APP_NAME }}-resource-group
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check environment variables
+        run: |
+          if [ -z "${{ env.STATIC_WEB_APP_NAME }}" ]; then
+            echo "::error::STATIC_WEB_APP_NAME is not set. Please set it as a repository variable."
+            exit 1
+          fi
+          if [ -z "${{ env.RESOURCE_GROUP_NAME }}" ]; then
+            echo "::error::RESOURCE_GROUP_NAME is not set. Please set it as a repository variable."
+            exit 1
+          fi
+          if [ -z "${{ vars.CUSTOM_ROOT_DOMAIN }}" ]; then
+            echo "::error::ROOT_DOMAIN is not set. Please set it as a repository variable."
+            exit 1
+          fi
+
+          # Validate ROOT_DOMAIN is an apex domain
+          DOMAIN_PARTS=(${ROOT_DOMAIN//./ })
+          if [ ${#DOMAIN_PARTS[@]} -ne 2 ]; then
+            echo "::error::ROOT_DOMAIN must be an apex domain (e.g., example.com)"
+            exit 1
+          fi
+
+          echo "Using Static Web App: ${{ env.STATIC_WEB_APP_NAME }}"
+          echo "Using Resource Group: ${{ env.RESOURCE_GROUP_NAME }}"
+          echo "Using Root Domain: ${{ vars.CUSTOM_ROOT_DOMAIN }}"
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Get the Static Web App's default hostname first
+      - name: Get Static Web App Hostname
+        id: get-hostname
+        run: |
+          HOSTNAME=$(az staticwebapp show --name ${{ env.STATIC_WEB_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --query "defaultHostname" -o tsv)
+          echo "defaultHostname=$HOSTNAME" >> $GITHUB_OUTPUT
+
+      # Get the Cloudflare Zone ID for the specified domain
+      - name: Get Cloudflare Zone ID
+        id: get-zone-id
+        run: |
+          ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${{ vars.CUSTOM_ROOT_DOMAIN }}" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" | \
+            jq -r '.result[0].id')
+
+          if [ -z "$ZONE_ID" ] || [ "$ZONE_ID" = "null" ]; then
+            echo "::error::Failed to get Cloudflare Zone ID for domain ${{ vars.CUSTOM_ROOT_DOMAIN }}"
+            exit 1
+          fi
+
+          echo "ZONE_ID=$ZONE_ID" >> $GITHUB_OUTPUT
+
+      # Create initial CNAME records in Cloudflare
+      - name: Create Initial CNAME Records
+        run: |
+          source .github/scripts/manage-dns-records.sh
+
+          # Create initial CNAME records for both domains
+          manage_dns_record "CNAME" "@" "${{ steps.get-hostname.outputs.defaultHostname }}" "true" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          manage_dns_record "CNAME" "www" "${{ steps.get-hostname.outputs.defaultHostname }}" "true" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+
+      - name: Deploy Bicep Template
+        id: deploy-bicep
+        uses: azure/arm-deploy@v2
+        with:
+          scope: 'resourceGroup'
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
+          template: ./iac/swacustomdomain.bicep
+          parameters: >-
+            staticWebAppName=${{ env.STATIC_WEB_APP_NAME }}
+            rootDomain=${{ vars.CUSTOM_ROOT_DOMAIN }}
+
+      # Create TXT validation records in Cloudflare
+      - name: Create TXT Validation Records
+        run: |
+          source .github/scripts/manage-dns-records.sh
+
+          # Create TXT validation records for both domains
+          manage_dns_record "TXT" "@" "${{ steps.deploy-bicep.outputs.rootDomainValidationToken }}" "false" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          manage_dns_record "TXT" "www" "${{ steps.deploy-bicep.outputs.wwwDomainValidationToken }}" "false" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+
+      - name: Verification Message
+        run: |
+          echo "Custom domain setup completed!"
+          echo "Created/Updated DNS records in Cloudflare for domains:"
+          echo "  - ${{ steps.deploy-bicep.outputs.rootDomainName }}"
+          echo "  - ${{ steps.deploy-bicep.outputs.wwwDomainName }}"
+          echo "Please allow some time for DNS propagation and Azure validation."
