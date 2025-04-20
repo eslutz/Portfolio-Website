@@ -79,9 +79,6 @@ export class PortfolioApiService {
       const request = this.http
         .post<T[]>(this.apiUrl, { component: component })
         .pipe(
-          tap((response) => {
-            console.log(`Response for component ${component}:`, response);
-          }),
           catchError((error) => this.handleError(error)),
           shareReplay({
             bufferSize: 1,
