@@ -1,4 +1,4 @@
-name: Set Custom Domain
+name: Deploy Site Custom Domain
 
 on:
   workflow_dispatch:
@@ -7,7 +7,6 @@ jobs:
   deploy-custom-domain:
     runs-on: ubuntu-latest
     env:
-      # Use repository variables with fallbacks if not set
       STATIC_WEB_APP_NAME: ${{ vars.APP_NAME }}-swa
       RESOURCE_GROUP_NAME: ${{ vars.APP_NAME }}-resource-group
     steps:
