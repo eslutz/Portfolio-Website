@@ -116,8 +116,6 @@ jobs:
             local record_content=$3
             local proxied=$4
 
-            echo "Managing $record_type record for $record_name..."
-
             # Format content based on record type
             if [ "$record_type" = "TXT" ]; then
               # Only add quotes if they don't already exist
@@ -143,7 +141,6 @@ jobs:
                 return 0
               fi
 
-              echo "Updating $record_type record for $record_name..."
               RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records/$RECORD_ID" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
@@ -151,13 +148,9 @@ jobs:
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
                 echo "::error::Failed to update $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
-                echo "Full response: $RESPONSE"
                 exit 1
               fi
-
-              echo "Updated $record_type record for $record_name successfully."
             else
-              echo "No existing $record_type record found. Creating new one for $record_name..."
               RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
@@ -165,11 +158,8 @@ jobs:
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
                 echo "::error::Failed to create $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
-                echo "Full response: $RESPONSE"
                 exit 1
               fi
-
-              echo "Created new $record_type record for $record_name successfully."
             fi
           }
 
