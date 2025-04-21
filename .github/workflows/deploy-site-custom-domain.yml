@@ -116,14 +116,6 @@ jobs:
             local record_content=$3
             local proxied=$4
 
-            # Format content based on record type
-            if [ "$record_type" = "TXT" ]; then
-              # Only add quotes if they don't already exist
-              if [[ ! "$record_content" =~ ^\".*\"$ ]]; then
-                record_content="\"$record_content\""
-              fi
-            fi
-
             # Get existing record of this type + name
             RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records?type=$record_type&name=$record_name" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
@@ -144,7 +136,7 @@ jobs:
               RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records/$RECORD_ID" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
-                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":$record_content,\"ttl\":1,\"proxied\":$proxied,\"comment\":\"$COMMENT\"}")
+                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied,\"comment\":\"$COMMENT\"}")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
                 echo "::error::Failed to update $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
@@ -154,7 +146,7 @@ jobs:
               RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
-                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":$record_content,\"ttl\":1,\"proxied\":$proxied,\"comment\":\"$COMMENT\"}")
+                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied,\"comment\":\"$COMMENT\"}")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
                 echo "::error::Failed to create $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
