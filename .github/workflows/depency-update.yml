@@ -22,7 +22,7 @@ concurrency:
 ##  WORKFLOW JOBS
 #########################################################################################
 jobs:
-  UpdateNpmDependencies:
+  update_npm_dependencies:
     name: Update NPM Dependencies
     runs-on: ubuntu-latest
     steps:
@@ -45,8 +45,8 @@ jobs:
           git commit -m "updated project dependencies" || exit 0
           git push --force
 
-  deploy-portfolio:
-    needs: UpdateNpmDependencies
+  deploy_portfolio:
+    needs: update_npm_dependencies
     uses: ./.github/workflows/deploy-site.yml
     secrets:
       SWA_DEPLOYMENT_TOKEN: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}

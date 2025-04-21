@@ -15,7 +15,7 @@ on:
       - 'iac/**'
 
 jobs:
-  deploy-infrastructure:
+  deploy_infrastructure:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -59,8 +59,8 @@ jobs:
         run: |
           gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
 
-  deploy-portfolio:
-    needs: deploy-infrastructure
+  deploy_portfolio:
+    needs: deploy_infrastructure
     uses: ./.github/workflows/deploy-site.yml
     secrets:
       SWA_DEPLOYMENT_TOKEN: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
