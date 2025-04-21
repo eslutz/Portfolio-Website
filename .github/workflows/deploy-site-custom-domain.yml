@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-custom-domain:
+  set_custom_domain:
     runs-on: ubuntu-latest
     env:
       STATIC_WEB_APP_NAME: ${{ vars.APP_NAME }}-swa
@@ -24,14 +24,15 @@ jobs:
             exit 1
           fi
           if [ -z "${{ vars.CUSTOM_ROOT_DOMAIN }}" ]; then
-            echo "::error::ROOT_DOMAIN is not set. Please set it as a repository variable."
+            echo "::error::CUSTOM_ROOT_DOMAIN is not set. Please set it as a repository variable."
             exit 1
           fi
 
-          # Validate ROOT_DOMAIN is an apex domain
-          DOMAIN_PARTS=(${ROOT_DOMAIN//./ })
+          # Validate CUSTOM_ROOT_DOMAIN is an apex domain
+          DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
+          IFS='.' read -ra DOMAIN_PARTS <<< "$DOMAIN"
           if [ ${#DOMAIN_PARTS[@]} -ne 2 ]; then
-            echo "::error::ROOT_DOMAIN must be an apex domain (e.g., example.com)"
+            echo "::error::CUSTOM_ROOT_DOMAIN must be an apex domain (e.g., example.com)"
             exit 1
           fi
 
@@ -39,17 +40,56 @@ jobs:
           echo "Using Resource Group: ${{ env.RESOURCE_GROUP_NAME }}"
           echo "Using Root Domain: ${{ vars.CUSTOM_ROOT_DOMAIN }}"
 
-      - name: Azure Login
+      - name: Azure login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Get the Static Web App's default hostname first
-      - name: Get Static Web App Hostname
+      # Get the Static Web App's default hostname
+      - name: Get static web app hostname
         id: get-hostname
         run: |
           HOSTNAME=$(az staticwebapp show --name ${{ env.STATIC_WEB_APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --query "defaultHostname" -o tsv)
+
           echo "defaultHostname=$HOSTNAME" >> $GITHUB_OUTPUT
+
+      # Deploy the Bicep template to create the CNAME and TXT validation records
+      # Using az cli instead of the Azure/arm-deploy action because the action doesn't support the --no-wait flag
+      # The --no-wait flag is required to avoid blocking the workflow until the deployment is complete
+      - name: Deploy Bicep template
+        id: deploy-bicep
+        run: |
+          az deployment group create \
+            --resource-group "${{ env.RESOURCE_GROUP_NAME }}" \
+            --template-file ./iac/swacustomdomain.bicep \
+            --parameters staticWebAppName="${{ env.STATIC_WEB_APP_NAME }}" rootDomain="${{ vars.CUSTOM_ROOT_DOMAIN }}" \
+            --no-wait
+
+      # Wait for Azure to add the custom domains to the Static Web App
+      - name: Wait for Azure to register domains
+        run: |
+          echo "Waiting 30 seconds for domain registration..."
+          sleep 30
+
+      # Retrieve the domain validation tokens with the az cli
+      - name: Fetch domain validation tokens
+        id: get-validation-tokens
+        run: |
+          # Get root domain token
+          ROOT_TOKEN=$(az staticwebapp hostname list --name "${{ env.STATIC_WEB_APP_NAME }}" --resource-group "${{ env.RESOURCE_GROUP_NAME }}" \
+            --query "[?name=='${{ vars.CUSTOM_ROOT_DOMAIN }}'].validationToken" -o tsv)
+
+          # Get www subdomain token
+          WWW_TOKEN=$(az staticwebapp hostname list --name "${{ env.STATIC_WEB_APP_NAME }}" --resource-group "${{ env.RESOURCE_GROUP_NAME }}" \
+            --query "[?name=='www.${{ vars.CUSTOM_ROOT_DOMAIN }}'].validationToken" -o tsv)
+
+          if [ -z "$ROOT_TOKEN" ] || [ -z "$WWW_TOKEN" ]; then
+            echo "::error::Failed to retrieve validation tokens. Ensure domain binding is correctly set up."
+            exit 1
+          fi
+
+          echo "ROOT_TOKEN=$ROOT_TOKEN" >> $GITHUB_OUTPUT
+          echo "WWW_TOKEN=$WWW_TOKEN" >> $GITHUB_OUTPUT
 
       # Get the Cloudflare Zone ID for the specified domain
       - name: Get Cloudflare Zone ID
@@ -67,36 +107,72 @@ jobs:
 
           echo "ZONE_ID=$ZONE_ID" >> $GITHUB_OUTPUT
 
-      # Create initial CNAME records in Cloudflare
-      - name: Create Initial CNAME Records
+      # Create CNAME and TXT validation records in Cloudflare
+      - name: Create DNS Records in Cloudflare
         run: |
-          source .github/scripts/manage-dns-records.sh
+          manage_dns_record() {
+            local record_type=$1      # e.g., CNAME
+            local record_name=$2      # e.g., @ or www.example.com
+            local record_content=$3   # e.g., yourapp.azurestaticapps.net
+            local proxied=$4          # true or false
 
-          # Create initial CNAME records for both domains
-          manage_dns_record "CNAME" "@" "${{ steps.get-hostname.outputs.defaultHostname }}" "true" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          manage_dns_record "CNAME" "www" "${{ steps.get-hostname.outputs.defaultHostname }}" "true" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+            echo "Managing $record_type record for $record_name..."
 
-      - name: Deploy Bicep Template
-        id: deploy-bicep
-        uses: azure/arm-deploy@v2
-        with:
-          scope: 'resourceGroup'
-          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
-          template: ./iac/swacustomdomain.bicep
-          parameters: >-
-            staticWebAppName=${{ env.STATIC_WEB_APP_NAME }}
-            rootDomain=${{ vars.CUSTOM_ROOT_DOMAIN }}
+            # Get existing record of this type + name
+            RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records?type=$record_type&name=$record_name" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -H "Content-Type: application/json")
 
-      # Create TXT validation records in Cloudflare
-      - name: Create TXT Validation Records
-        run: |
-          source .github/scripts/manage-dns-records.sh
+            RECORD_ID=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].id // empty')
+            CURRENT_CONTENT=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].content // empty')
+
+            if [ -n "$RECORD_ID" ]; then
+              echo "Found existing $record_type record for $record_name with ID $RECORD_ID"
+
+              if [ "$CURRENT_CONTENT" = "$record_content" ]; then
+                echo "$record_type record for $record_name already has correct content. Skipping."
+                return 0
+              fi
+
+              echo "Updating $record_type record for $record_name..."
+              RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records/$RECORD_ID" \
+                -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+                -H "Content-Type: application/json" \
+                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied}")
+
+              if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
+                echo "::error::Failed to update $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+                echo "Full response: $RESPONSE"
+                exit 1
+              fi
+
+              echo "Updated $record_type record for $record_name successfully."
+            else
+              echo "No existing $record_type record found. Creating new one for $record_name..."
+              RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records" \
+                -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+                -H "Content-Type: application/json" \
+                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied}")
+
+              if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
+                echo "::error::Failed to create $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+                echo "Full response: $RESPONSE"
+                exit 1
+              fi
+
+              echo "Created new $record_type record for $record_name successfully."
+            fi
+          }
+
+          # Create CNAME records for both domains
+          manage_dns_record "CNAME" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true"
+          manage_dns_record "CNAME" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true"
 
           # Create TXT validation records for both domains
-          manage_dns_record "TXT" "@" "${{ steps.deploy-bicep.outputs.rootDomainValidationToken }}" "false" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          manage_dns_record "TXT" "www" "${{ steps.deploy-bicep.outputs.wwwDomainValidationToken }}" "false" "${{ steps.get-zone-id.outputs.ZONE_ID }}" "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          manage_dns_record "TXT" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
+          manage_dns_record "TXT" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
 
-      - name: Verification Message
+      - name: Verification message
         run: |
           echo "Custom domain setup completed!"
           echo "Created/Updated DNS records in Cloudflare for domains:"

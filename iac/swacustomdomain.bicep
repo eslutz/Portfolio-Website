@@ -29,8 +29,5 @@ resource customDomainWWW 'Microsoft.Web/staticSites/customDomains@2022-09-01' = 
   }
 }
 
-output defaultHostname string = staticWebApp.properties.defaultHostname
 output rootDomainName string = customDomainRoot.name
-output rootDomainValidationToken string = customDomainRoot.properties.validationToken
 output wwwDomainName string = customDomainWWW.name
-output wwwDomainValidationToken string = customDomainWWW.properties.validationToken

@@ -23,7 +23,7 @@ concurrency:
 #########################################################################################
 jobs:
   update_npm_dependencies:
-    name: Update NPM Dependencies
+    name: Update NPM dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,10 +34,10 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Install & Update Dependencies
+      - name: Install & update dependencies
         run: npm run upd-pkg-ver
 
-      - name: Commit & Push Changes
+      - name: Commit & push changes
         run: |
           git config --global user.email "${{ vars.COMMIT_USER_EMAIL }}"
           git config --global user.name "${{ vars.COMMIT_USER_NAME }}"
