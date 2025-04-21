@@ -111,13 +111,13 @@ jobs:
       - name: Create DNS Records in Cloudflare
         run: |
           manage_dns_record() {
-            local record_type=$1
-            local record_name=$2
-            local record_content=$3
-            local proxied=$4
+            local RECORD_TYPE=$1
+            local RECORD_NAME=$2
+            local RECORD_CONTENT=$3
+            local PROXIED=$4
 
             # Get existing record of this type + name
-            RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records?type=$record_type&name=$record_name" \
+            RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records?type=$RECORD_TYPE&name=$RECORD_NAME" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json")
 
@@ -125,31 +125,46 @@ jobs:
             CURRENT_CONTENT=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].content // empty')
             COMMENT="Azure SWA custom domain validation"
 
-            if [ -n "$RECORD_ID" ]; then
-              echo "Found existing $record_type record for $record_name with ID $RECORD_ID"
+            # If it's a TXT record, wrap the content in quotes
+            if [ "$RECORD_TYPE" = "TXT" ]; then
+              # Remove any existing quotes first, then add new ones to ensure proper formatting
+              RECORD_CONTENT=$(echo "$RECORD_CONTENT" | sed 's/^"//;s/"$//')
+              RECORD_CONTENT="\"$RECORD_CONTENT\""
+            fi
 
-              if [ "$CURRENT_CONTENT" = "$record_content" ]; then
-                echo "$record_type record for $record_name already has correct content. Skipping."
+            DATA="$(jq -n \
+              --arg type "$RECORD_TYPE" \
+              --arg name "$RECORD_NAME" \
+              --arg content "$RECORD_CONTENT" \
+              --argjson proxied "$PROXIED" \
+              --arg comment "$COMMENT" \
+              '{type: $type, name: $name, content: $content, ttl: 1, proxied: $proxied, comment: $comment}')"
+
+            if [ -n "$RECORD_ID" ]; then
+              echo "Found existing $RECORD_TYPE record for $RECORD_NAME with ID $RECORD_ID"
+
+              if [ "$CURRENT_CONTENT" = "$RECORD_CONTENT" ]; then
+                echo "$RECORD_TYPE record for $RECORD_NAME already has correct content. Skipping."
                 return 0
               fi
 
               RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records/$RECORD_ID" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
-                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied,\"comment\":\"$COMMENT\"}")
+                --data "$DATA")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-                echo "::error::Failed to update $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+                echo "::error::Failed to update $RECORD_TYPE record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
                 exit 1
               fi
             else
               RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
-                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied,\"comment\":\"$COMMENT\"}")
+                --data "$DATA")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-                echo "::error::Failed to create $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+                echo "::error::Failed to create $RECORD_TYPE record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
                 exit 1
               fi
             fi
@@ -160,17 +175,8 @@ jobs:
           manage_dns_record "CNAME" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true"
 
           # Create TXT validation records for both domains
-          manage_dns_record "TXT" "asuid.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
-          manage_dns_record "TXT" "asuid.www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
-
-      # Set the apex custom domain as the default hostname
-      - name: Set custom domain default
-        run: |
-          echo "Setting ${{ vars.CUSTOM_ROOT_DOMAIN }} as the default hostname..."
-          az staticwebapp hostname set-default \
-            --name "${{ env.STATIC_WEB_APP_NAME }}" \
-            --resource-group "${{ env.RESOURCE_GROUP_NAME }}" \
-            --hostname "${{ vars.CUSTOM_ROOT_DOMAIN }}"
+          manage_dns_record "TXT" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
+          manage_dns_record "TXT" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
 
       - name: Verification message
         run: |
