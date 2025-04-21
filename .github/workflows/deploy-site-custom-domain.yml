@@ -121,6 +121,12 @@ jobs:
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json")
 
+            # Check if the GET request was successful
+            if ! echo "$RECORD_RESPONSE" | jq -e '.success' > /dev/null; then
+              echo "❌ Failed to check existing $RECORD_TYPE record for $RECORD_NAME: $(echo "$RECORD_RESPONSE" | jq -r '.errors[0].message')"
+              return 1
+            fi
+
             RECORD_ID=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].id // empty')
             CURRENT_CONTENT=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].content // empty')
             COMMENT="Azure SWA custom domain validation"
@@ -141,10 +147,8 @@ jobs:
               '{type: $type, name: $name, content: $content, ttl: 1, proxied: $proxied, comment: $comment}')"
 
             if [ -n "$RECORD_ID" ]; then
-              echo "Found existing $RECORD_TYPE record for $RECORD_NAME with ID $RECORD_ID"
-
               if [ "$CURRENT_CONTENT" = "$RECORD_CONTENT" ]; then
-                echo "$RECORD_TYPE record for $RECORD_NAME already has correct content. Skipping."
+                echo "✅ $RECORD_TYPE record for $RECORD_NAME: No changes needed (content matches)"
                 return 0
               fi
 
@@ -154,9 +158,10 @@ jobs:
                 --data "$DATA")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-                echo "::error::Failed to update $RECORD_TYPE record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
-                exit 1
+                echo "❌ Failed to update $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+                return 1
               fi
+              echo "✅ $RECORD_TYPE record for $RECORD_NAME: Updated successfully"
             else
               RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
@@ -164,19 +169,34 @@ jobs:
                 --data "$DATA")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-                echo "::error::Failed to create $RECORD_TYPE record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
-                exit 1
+                echo "❌ Failed to create $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+                return 1
               fi
+              echo "✅ $RECORD_TYPE record for $RECORD_NAME: Created successfully"
             fi
           }
 
+          echo "Managing DNS records for ${{ vars.CUSTOM_ROOT_DOMAIN }}..."
+          echo "----------------------------------------"
+
+          # Track if any operations failed
+          FAILED=0
+
           # Create CNAME records for both domains
-          manage_dns_record "CNAME" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true"
-          manage_dns_record "CNAME" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true"
+          manage_dns_record "CNAME" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true" || FAILED=1
+          manage_dns_record "CNAME" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true" || FAILED=1
 
           # Create TXT validation records for both domains
-          manage_dns_record "TXT" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
-          manage_dns_record "TXT" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
+          manage_dns_record "TXT" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false" || FAILED=1
+          manage_dns_record "TXT" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false" || FAILED=1
+
+          echo "----------------------------------------"
+          if [ $FAILED -eq 1 ]; then
+            echo "❌ DNS record management completed with errors"
+            exit 1
+          else
+            echo "✅ DNS record management completed successfully"
+          fi
 
       - name: Verification message
         run: |
