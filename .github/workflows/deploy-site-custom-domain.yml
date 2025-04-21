@@ -181,6 +181,15 @@ jobs:
           manage_dns_record "TXT" "asuid.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
           manage_dns_record "TXT" "asuid.www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
 
+      # Set the apex custom domain as the default hostname
+      - name: Set custom domain default
+        run: |
+          echo "Setting ${{ vars.CUSTOM_ROOT_DOMAIN }} as the default hostname..."
+          az staticwebapp hostname set-default \
+            --name "${{ env.STATIC_WEB_APP_NAME }}" \
+            --resource-group "${{ env.RESOURCE_GROUP_NAME }}" \
+            --hostname "${{ vars.CUSTOM_ROOT_DOMAIN }}"
+
       - name: Verification message
         run: |
           echo "Custom domain setup completed!"
