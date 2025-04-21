@@ -111,12 +111,20 @@ jobs:
       - name: Create DNS Records in Cloudflare
         run: |
           manage_dns_record() {
-            local record_type=$1      # e.g., CNAME
-            local record_name=$2      # e.g., @ or www.example.com
-            local record_content=$3   # e.g., yourapp.azurestaticapps.net
-            local proxied=$4          # true or false
+            local record_type=$1
+            local record_name=$2
+            local record_content=$3
+            local proxied=$4
 
             echo "Managing $record_type record for $record_name..."
+
+            # Format content based on record type
+            if [ "$record_type" = "TXT" ]; then
+              # Only add quotes if they don't already exist
+              if [[ ! "$record_content" =~ ^\".*\"$ ]]; then
+                record_content="\"$record_content\""
+              fi
+            fi
 
             # Get existing record of this type + name
             RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records?type=$record_type&name=$record_name" \
@@ -138,7 +146,7 @@ jobs:
               RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records/$RECORD_ID" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
-                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied}")
+                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":$record_content,\"ttl\":1,\"proxied\":$proxied}")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
                 echo "::error::Failed to update $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
@@ -152,7 +160,7 @@ jobs:
               RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ steps.get-zone-id.outputs.ZONE_ID }}/dns_records" \
                 -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
                 -H "Content-Type: application/json" \
-                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":\"$record_content\",\"ttl\":1,\"proxied\":$proxied}")
+                --data "{\"type\":\"$record_type\",\"name\":\"$record_name\",\"content\":$record_content,\"ttl\":1,\"proxied\":$proxied}")
 
               if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
                 echo "::error::Failed to create $record_type record: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
@@ -169,8 +177,8 @@ jobs:
           manage_dns_record "CNAME" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-hostname.outputs.defaultHostname }}" "true"
 
           # Create TXT validation records for both domains
-          manage_dns_record "TXT" "${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
-          manage_dns_record "TXT" "www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
+          manage_dns_record "TXT" "asuid.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}" "false"
+          manage_dns_record "TXT" "asuid.www.${{ vars.CUSTOM_ROOT_DOMAIN }}" "${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}" "false"
 
       - name: Verification message
         run: |
