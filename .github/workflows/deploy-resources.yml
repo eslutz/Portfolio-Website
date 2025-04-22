@@ -50,6 +50,11 @@ jobs:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
     steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Restore CosmosDB Database
         run: |
           # Set environment variables
@@ -93,6 +98,11 @@ jobs:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
     steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Get SWA deployment token
         id: get-swa-token
         run: |
