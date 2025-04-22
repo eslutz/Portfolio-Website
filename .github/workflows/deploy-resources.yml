@@ -17,6 +17,10 @@ on:
 jobs:
   deploy_infrastructure:
     runs-on: ubuntu-latest
+    outputs:
+      staticWebAppName: ${{ steps.deploy-bicep.outputs.staticWebAppName }}
+      resourceGroupName: ${{ steps.deploy-bicep.outputs.resourceGroupName }}
+      cosmosDbName: ${{ steps.deploy-bicep.outputs.cosmosDbName }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,12 +46,19 @@ jobs:
             existingCosmosDbAccountName=${{ vars.COSMOS_ACCOUNT_NAME }}
             existingCosmosDbResourceGroup=${{ vars.COSMOS_RESOURCE_GROUP }}
 
+  save_swa_token:
+    needs: deploy_infrastructure
+    runs-on: ubuntu-latest
+    steps:
       - name: Get SWA deployment token
         id: get-swa-token
         run: |
+          SWA_NAME="${{ needs.deploy_infrastructure.outputs.staticWebAppName }}"
+          SWA_RESOURCE_GROUP="${{ needs.deploy_infrastructure.outputs.resourceGroupName }}"
+
           TOKEN=$(az staticwebapp secrets list \
-            --name ${{ steps.deploy-bicep.outputs.staticWebAppName }} \
-            --resource-group ${{ steps.deploy-bicep.outputs.resourceGroupName }} \
+            --name "$SWA_NAME" \
+            --resource-group "$SWA_RESOURCE_GROUP" \
             --query "properties.apiKey" -o tsv)
           echo "::add-mask::$TOKEN"
           echo "swa_token=$TOKEN" >> $GITHUB_OUTPUT
@@ -58,6 +69,49 @@ jobs:
           SWA_TOKEN: ${{ steps.get-swa-token.outputs.swa_token }}
         run: |
           gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
+
+  database_restore:
+    needs: deploy_infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore CosmosDB Database
+        run: |
+          # Set environment variables
+          COSMOS_ACCOUNT_NAME="${{ vars.COSMOS_ACCOUNT_NAME }}"
+          COSMOS_RESOURCE_GROUP="${{ vars.COSMOS_RESOURCE_GROUP }}"
+          DATABASE_NAME="${{ needs.deploy_infrastructure.outputs.cosmosDbName }}"
+          LOCATION="${{ vars.AZURE_REGION }}"
+
+          # Directly construct the source database ID for the restore operation
+          SOURCE_DB_ID="dbs/$DATABASE_NAME"
+          echo "Using source database ID: $SOURCE_DB_ID"
+
+          # Get the instance ID of the Cosmos DB account
+          INSTANCE_ID=$(az cosmosdb show \
+            --name "$COSMOS_ACCOUNT_NAME" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --query "instanceId" -o tsv)
+
+          echo "Instance ID: $INSTANCE_ID"
+
+          # Get all available restore timestamps where this database existed using database name
+          RESTORE_TIMESTAMPS=$(az cosmosdb restorable-database list \
+            --location "$LOCATION" \
+            --instance-id "$INSTANCE_ID" \
+            --query "[?name=='$DATABASE_NAME'].restoreTimestamp" -o tsv)
+
+          # Get the latest timestamp (should be the first one since they're sorted in descending order)
+          LATEST_TIMESTAMP=$(echo "$RESTORE_TIMESTAMPS" | head -n 1)
+
+          echo "Latest timestamp where database existed: $LATEST_TIMESTAMP"
+
+          # Restore the database using the latest valid timestamp
+          az cosmosdb sql database restore \
+            --account-name "$COSMOS_ACCOUNT_NAME" \
+            --resource-group "$COSMOS_RESOURCE_GROUP" \
+            --name "$DATABASE_NAME" \
+            --restore-timestamp "$LATEST_TIMESTAMP" \
+            --source-database-id "$SOURCE_DB_ID"
 
   deploy_portfolio:
     needs: deploy_infrastructure

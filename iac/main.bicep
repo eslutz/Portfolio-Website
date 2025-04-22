@@ -90,3 +90,4 @@ output staticWebAppName string = swaName
 output resourceGroupName string = resourceGroupName
 output staticWebAppDefaultHostname string = staticWebApp.outputs.staticWebAppDefaultHostname
 output cosmosDbEndpoint string = existingCosmosDbAccount.properties.documentEndpoint
+output cosmosDbName string = cosmos.dbName
