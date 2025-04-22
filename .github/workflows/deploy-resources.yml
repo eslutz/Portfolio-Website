@@ -46,30 +46,6 @@ jobs:
             existingCosmosDbAccountName=${{ vars.COSMOS_ACCOUNT_NAME }}
             existingCosmosDbResourceGroup=${{ vars.COSMOS_RESOURCE_GROUP }}
 
-  save_swa_token:
-    needs: deploy_infrastructure
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get SWA deployment token
-        id: get-swa-token
-        run: |
-          SWA_NAME="${{ needs.deploy_infrastructure.outputs.staticWebAppName }}"
-          SWA_RESOURCE_GROUP="${{ needs.deploy_infrastructure.outputs.resourceGroupName }}"
-
-          TOKEN=$(az staticwebapp secrets list \
-            --name "$SWA_NAME" \
-            --resource-group "$SWA_RESOURCE_GROUP" \
-            --query "properties.apiKey" -o tsv)
-          echo "::add-mask::$TOKEN"
-          echo "swa_token=$TOKEN" >> $GITHUB_OUTPUT
-
-      - name: Add SWA token as repository secret
-        env:
-          GH_TOKEN: ${{ secrets.REPO_SECRETS_TOKEN }}
-          SWA_TOKEN: ${{ steps.get-swa-token.outputs.swa_token }}
-        run: |
-          gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
-
   database_restore:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
@@ -113,8 +89,32 @@ jobs:
             --restore-timestamp "$LATEST_TIMESTAMP" \
             --source-database-id "$SOURCE_DB_ID"
 
-  deploy_portfolio:
+  save_swa_token:
     needs: deploy_infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get SWA deployment token
+        id: get-swa-token
+        run: |
+          SWA_NAME="${{ needs.deploy_infrastructure.outputs.staticWebAppName }}"
+          SWA_RESOURCE_GROUP="${{ needs.deploy_infrastructure.outputs.resourceGroupName }}"
+
+          TOKEN=$(az staticwebapp secrets list \
+            --name "$SWA_NAME" \
+            --resource-group "$SWA_RESOURCE_GROUP" \
+            --query "properties.apiKey" -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "swa_token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Add SWA token as repository secret
+        env:
+          GH_TOKEN: ${{ secrets.REPO_SECRETS_TOKEN }}
+          SWA_TOKEN: ${{ steps.get-swa-token.outputs.swa_token }}
+        run: |
+          gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
+
+  deploy_portfolio:
+    needs: save_swa_token
     uses: ./.github/workflows/deploy-site.yml
     secrets:
       SWA_DEPLOYMENT_TOKEN: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
