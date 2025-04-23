@@ -32,15 +32,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ vars.NODE_VERSION }}
+          node-version: 'lts/*'
 
-      - name: Install & update dependencies
-        run: npm run upd-pkg-ver
+      - name: Install npm-check-updates
+        run: npm install -g npm-check-updates
+
+      - name: Update package.json to latest versions
+        run: ncu -u
+
+      - name: Install updated dependencies
+        run: npm install
 
       - name: Commit & push changes
         run: |
           git config --global user.email "${{ vars.COMMIT_USER_EMAIL }}"
           git config --global user.name "${{ vars.COMMIT_USER_NAME }}"
-          git add --update
-          git commit -m "updated project dependencies" || exit 0
+          git add package.json package-lock.json
+          git commit -m "Update dependencies to latest versions" || exit 0
           git push --force
