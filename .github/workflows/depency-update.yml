@@ -7,9 +7,9 @@ name: Update Portfolio Site Dependencies
 ##  WORKFLOW TRIGGER
 #########################################################################################
 on:
+  workflow_dispatch:
   schedule:
     - cron: '45 4 */14 * *'
-  workflow_dispatch:
 
 #########################################################################################
 ##  WORKFLOW CONCURRENCY
@@ -23,8 +23,8 @@ concurrency:
 #########################################################################################
 jobs:
   update_npm_dependencies:
-    name: Update NPM dependencies
     runs-on: ubuntu-latest
+    name: Update NPM Dependencies Job
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,9 +44,3 @@ jobs:
           git add --update
           git commit -m "updated project dependencies" || exit 0
           git push --force
-
-  deploy_portfolio:
-    needs: update_npm_dependencies
-    uses: ./.github/workflows/deploy-site.yml
-    secrets:
-      SWA_DEPLOYMENT_TOKEN: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}

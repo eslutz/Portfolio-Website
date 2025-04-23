@@ -1,5 +1,11 @@
+#########################################################################################
+##  DEPLOY INFRASTRUCTURE
+#########################################################################################
 name: Deploy Portfolio Site Infrastructure
 
+#########################################################################################
+##  WORKFLOW TRIGGER
+#########################################################################################
 on:
   workflow_dispatch:
   push:
@@ -14,6 +20,16 @@ on:
     paths:
       - 'iac/**'
 
+#########################################################################################
+##  WORKFLOW CONCURRENCY
+#########################################################################################
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+#########################################################################################
+##  WORKFLOW JOBS
+#########################################################################################
 jobs:
   deploy_infrastructure:
     runs-on: ubuntu-latest
@@ -21,6 +37,7 @@ jobs:
       staticWebAppName: ${{ steps.deploy-bicep.outputs.staticWebAppName }}
       resourceGroupName: ${{ steps.deploy-bicep.outputs.resourceGroupName }}
       cosmosDbName: ${{ steps.deploy-bicep.outputs.cosmosDbName }}
+    name: Deploy Infrastructure Job
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,6 +66,7 @@ jobs:
   database_restore:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
+    name: Restore CosmosDB Database Job
     steps:
       - name: Azure login
         uses: azure/login@v2
@@ -97,6 +115,7 @@ jobs:
   save_swa_token:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
+    name: Save SWA Code Deployment Token Job
     steps:
       - name: Azure login
         uses: azure/login@v2
@@ -128,3 +147,4 @@ jobs:
     uses: ./.github/workflows/deploy-site.yml
     secrets:
       SWA_DEPLOYMENT_TOKEN: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
+    name: Deploy Portfolio Site Job

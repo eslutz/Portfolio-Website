@@ -1,4 +1,11 @@
+#########################################################################################
+##  DEPLOY PORTFOLIO SITE
+#########################################################################################
 name: Deploy Portfolio Site
+
+#########################################################################################
+##  WORKFLOW TRIGGER
+#########################################################################################
 on:
   workflow_call:
     secrets:
@@ -17,16 +24,27 @@ on:
     paths-ignore:
       - 'iac/**'
       - '.github/**'
+
+#########################################################################################
+##  WORKFLOW CONCURRENCY
+#########################################################################################
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+#########################################################################################
+##  WORKFLOW JOBS
+#########################################################################################
 jobs:
   build_and_deploy_job:
     if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed') }}
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Build And Deploy
-        id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
@@ -45,7 +63,6 @@ jobs:
     name: Close Pull Request Job
     steps:
       - name: Close Pull Request
-        id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
