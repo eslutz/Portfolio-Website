@@ -35,35 +35,7 @@ jobs:
 
       - name: Check environment variables
         run: |
-          # Set environment variables
-          SWA_NAME="${{ env.STATIC_WEB_APP_NAME }}"
-          RESOURCE_GROUP="${{ env.RESOURCE_GROUP_NAME }}"
-          ROOT_DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
-
-          # Validate required variables
-          if [ -z "$SWA_NAME" ]; then
-            echo "::error::STATIC_WEB_APP_NAME is not set. Please set it as a repository variable."
-            exit 1
-          fi
-          if [ -z "$RESOURCE_GROUP" ]; then
-            echo "::error::RESOURCE_GROUP_NAME is not set. Please set it as a repository variable."
-            exit 1
-          fi
-          if [ -z "$ROOT_DOMAIN" ]; then
-            echo "::error::CUSTOM_ROOT_DOMAIN is not set. Please set it as a repository variable."
-            exit 1
-          fi
-
-          # Validate CUSTOM_ROOT_DOMAIN is an apex domain
-          IFS='.' read -ra DOMAIN_PARTS <<< "$ROOT_DOMAIN"
-          if [ ${#DOMAIN_PARTS[@]} -ne 2 ]; then
-            echo "::error::CUSTOM_ROOT_DOMAIN must be an apex domain (e.g., example.com)"
-            exit 1
-          fi
-
-          echo "Using Static Web App: $SWA_NAME"
-          echo "Using Resource Group: $RESOURCE_GROUP"
-          echo "Using Root Domain: $ROOT_DOMAIN"
+          .github/scripts/check_environment_variables.sh "${{ env.STATIC_WEB_APP_NAME }}" "${{ env.RESOURCE_GROUP_NAME }}" "${{ vars.CUSTOM_ROOT_DOMAIN }}"
 
       - name: Azure login
         uses: azure/login@v2
@@ -156,79 +128,16 @@ jobs:
       # Create CNAME and TXT validation records in Cloudflare
       - name: Create DNS Records in Cloudflare
         run: |
-          # Set environment variables
-          CF_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          ZONE_ID="${{ steps.get-zone-id.outputs.ZONE_ID }}"
+          # Source the script to make the function available
+          source .github/scripts/manage_dns_records.sh
+
+          # Set variables
           ROOT_DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
           HOSTNAME="${{ steps.get-hostname.outputs.defaultHostname }}"
           ROOT_TOKEN="${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}"
           WWW_TOKEN="${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}"
-
-          manage_dns_record() {
-            local RECORD_TYPE=$1
-            local RECORD_NAME=$2
-            local RECORD_CONTENT=$3
-            local PROXIED=$4
-
-            # Get existing record of this type + name
-            RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=$RECORD_TYPE&name=$RECORD_NAME" \
-                -H "Authorization: Bearer $CF_TOKEN" \
-                -H "Content-Type: application/json")
-
-            # Check if the GET request was successful
-            if ! echo "$RECORD_RESPONSE" | jq -e '.success' > /dev/null; then
-              echo "❌ Failed to check existing $RECORD_TYPE record for $RECORD_NAME: $(echo "$RECORD_RESPONSE" | jq -r '.errors[0].message')"
-              return 1
-            fi
-
-            RECORD_ID=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].id // empty')
-            CURRENT_CONTENT=$(echo "$RECORD_RESPONSE" | jq -r '.result[0].content // empty')
-            COMMENT="Azure SWA custom domain validation"
-
-            # If it's a TXT record, wrap the content in quotes
-            if [ "$RECORD_TYPE" = "TXT" ]; then
-              # Remove any existing quotes first, then add new ones to ensure proper formatting
-              RECORD_CONTENT=$(echo "$RECORD_CONTENT" | sed 's/^"//;s/"$//')
-              RECORD_CONTENT="\"$RECORD_CONTENT\""
-            fi
-
-            DATA="$(jq -n \
-              --arg type "$RECORD_TYPE" \
-              --arg name "$RECORD_NAME" \
-              --arg content "$RECORD_CONTENT" \
-              --argjson proxied "$PROXIED" \
-              --arg comment "$COMMENT" \
-              '{type: $type, name: $name, content: $content, ttl: 1, proxied: $proxied, comment: $comment}')"
-
-            if [ -n "$RECORD_ID" ]; then
-              if [ "$CURRENT_CONTENT" = "$RECORD_CONTENT" ]; then
-                echo "✅ $RECORD_TYPE record for $RECORD_NAME: No changes needed (content matches)"
-                return 0
-              fi
-
-              RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID" \
-                -H "Authorization: Bearer $CF_TOKEN" \
-                -H "Content-Type: application/json" \
-                --data "$DATA")
-
-              if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-                echo "❌ Failed to update $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
-                return 1
-              fi
-              echo "✅ $RECORD_TYPE record for $RECORD_NAME: Updated successfully"
-            else
-              RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
-                -H "Authorization: Bearer $CF_TOKEN" \
-                -H "Content-Type: application/json" \
-                --data "$DATA")
-
-              if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-                echo "❌ Failed to create $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
-                return 1
-              fi
-              echo "✅ $RECORD_TYPE record for $RECORD_NAME: Created successfully"
-            fi
-          }
+          CF_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          ZONE_ID="${{ steps.get-zone-id.outputs.ZONE_ID }}"
 
           echo "Managing DNS records for $ROOT_DOMAIN..."
           echo "----------------------------------------"
@@ -237,12 +146,12 @@ jobs:
           FAILED=0
 
           # Create CNAME records for both domains
-          manage_dns_record "CNAME" "$ROOT_DOMAIN" "$HOSTNAME" "true" || FAILED=1
-          manage_dns_record "CNAME" "www.$ROOT_DOMAIN" "$HOSTNAME" "true" || FAILED=1
+          manage_dns_record "CNAME" "$ROOT_DOMAIN" "$HOSTNAME" "true" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
+          manage_dns_record "CNAME" "www.$ROOT_DOMAIN" "$HOSTNAME" "true" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
 
           # Create TXT validation records for both domains
-          manage_dns_record "TXT" "$ROOT_DOMAIN" "$ROOT_TOKEN" "false" || FAILED=1
-          manage_dns_record "TXT" "www.$ROOT_DOMAIN" "$WWW_TOKEN" "false" || FAILED=1
+          manage_dns_record "TXT" "$ROOT_DOMAIN" "$ROOT_TOKEN" "false" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
+          manage_dns_record "TXT" "www.$ROOT_DOMAIN" "$WWW_TOKEN" "false" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
 
           echo "----------------------------------------"
           if [ $FAILED -eq 1 ]; then
