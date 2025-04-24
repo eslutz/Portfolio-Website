@@ -7,12 +7,15 @@ name: Deploy Portfolio Site Infrastructure
 ##  WORKFLOW TRIGGER
 #########################################################################################
 on:
+  # Manual trigger for on-demand infrastructure deployment
   workflow_dispatch:
+  # Automatic trigger on push to main branch for IAC changes
   push:
     branches:
       - main
     paths:
       - 'iac/**'
+  # Automatic trigger on pull request events for IAC changes to main branch
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
@@ -23,6 +26,7 @@ on:
 #########################################################################################
 ##  WORKFLOW CONCURRENCY
 #########################################################################################
+# Prevents multiple parallel runs of the workflow on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -31,6 +35,8 @@ concurrency:
 ##  WORKFLOW JOBS
 #########################################################################################
 jobs:
+  # Deploys the Bicep template to create/update Azure resources
+  # Outputs the Static Web App name, resource group, and Cosmos DB name for use in subsequent jobs
   deploy_infrastructure:
     runs-on: ubuntu-latest
     outputs:
@@ -63,6 +69,8 @@ jobs:
             existingCosmosDbAccountName=${{ vars.COSMOS_ACCOUNT_NAME }}
             existingCosmosDbResourceGroup=${{ vars.COSMOS_RESOURCE_GROUP }}
 
+  # Restores the Cosmos DB database from its latest backup
+  # Uses the database name from the infrastructure deployment
   database_restore:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
@@ -112,6 +120,7 @@ jobs:
             --restore-timestamp "$LATEST_TIMESTAMP" \
             --source-database-id "$SOURCE_DB_ID"
 
+  # Retrieves the Static Web App code deployment token and saves it as a repository secret
   save_swa_token:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
@@ -142,6 +151,7 @@ jobs:
         run: |
           gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
 
+  # Triggers the site deployment workflow with the deployment token
   deploy_portfolio:
     needs: save_swa_token
     uses: ./.github/workflows/deploy-site.yml

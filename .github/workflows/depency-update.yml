@@ -7,13 +7,16 @@ name: Update Portfolio Site Dependencies
 ##  WORKFLOW TRIGGER
 #########################################################################################
 on:
+  # Manual trigger for on-demand dependency updates
   workflow_dispatch:
+  # Automatic trigger every 14 days at 4:45 AM UTC
   schedule:
     - cron: '45 4 */14 * *'
 
 #########################################################################################
 ##  WORKFLOW CONCURRENCY
 #########################################################################################
+# Prevents multiple parallel runs of the workflow on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -22,6 +25,7 @@ concurrency:
 ##  WORKFLOW JOBS
 #########################################################################################
 jobs:
+  # Updates the project dependencies to the latest versions and commits the changes
   update_npm_dependencies:
     runs-on: ubuntu-latest
     name: Update NPM Dependencies Job

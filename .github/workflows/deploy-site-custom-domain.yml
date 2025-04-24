@@ -7,11 +7,13 @@ name: Deploy Site Custom Domain
 ##  WORKFLOW TRIGGER
 #########################################################################################
 on:
+  # Manual trigger only - custom domain changes should be intentional
   workflow_dispatch:
 
 #########################################################################################
 ##  WORKFLOW CONCURRENCY
 #########################################################################################
+# Prevents multiple parallel runs of the workflow on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -20,6 +22,7 @@ concurrency:
 ##  WORKFLOW JOBS
 #########################################################################################
 jobs:
+  # Sets a custom domain for the portfolio site
   set_custom_domain:
     runs-on: ubuntu-latest
     env:
