@@ -9,6 +9,15 @@ name: Deploy Portfolio Site Infrastructure
 on:
   # Manual trigger for on-demand infrastructure deployment
   workflow_dispatch:
+    inputs:
+      backup_database_name:
+        description: 'Name of CosmosDB database to restore from backup (optional)'
+        required: false
+        type: string
+      backup_container_name:
+        description: 'Name of CosmosDB database container to restore from backup (optional)'
+        required: false
+        type: string
   # Automatic trigger on push to main branch for IAC changes
   push:
     branches:
@@ -42,7 +51,8 @@ jobs:
     outputs:
       staticWebAppName: ${{ steps.deploy-bicep.outputs.staticWebAppName }}
       resourceGroupName: ${{ steps.deploy-bicep.outputs.resourceGroupName }}
-      cosmosDbName: ${{ steps.deploy-bicep.outputs.cosmosDbName }}
+      databaseName: ${{ steps.deploy-bicep.outputs.databaseName }}
+      containerName: ${{ steps.deploy-bicep.outputs.containerName }}
     name: Deploy Infrastructure Job
     steps:
       - name: Checkout code
@@ -75,7 +85,11 @@ jobs:
     needs: deploy_infrastructure
     runs-on: ubuntu-latest
     name: Restore CosmosDB Database Job
+    continue-on-error: true
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Azure login
         uses: azure/login@v2
         with:
@@ -83,11 +97,20 @@ jobs:
 
       - name: Restore CosmosDB Database
         run: |
+          DESTINATION_DB_NAME="${{ needs.deploy_infrastructure.outputs.databaseName }}"
+          SOURCE_DB_NAME="${{ github.event.inputs.backup_database_name || needs.deploy_infrastructure.outputs.databaseName }}"
+          BACKUP_CONTAINER_NAME="${{ github.event.inputs.backup_container_name || needs.deploy_infrastructure.outputs.containerName }}"
+          echo "Restoring from backup database: $SOURCE_DB_NAME"
+          echo "Restoring container: $BACKUP_CONTAINER_NAME"
+          echo "Restoring to database: $DESTINATION_DB_NAME"
+
           .github/scripts/restore_cosmos_db.sh \
-            "${{ vars.COSMOS_ACCOUNT_NAME }}" \
-            "${{ vars.COSMOS_RESOURCE_GROUP }}" \
-            "${{ needs.deploy_infrastructure.outputs.cosmosDbName }}" \
-            "${{ vars.AZURE_REGION }}"
+            --account-name "${{ vars.COSMOS_ACCOUNT_NAME }}" \
+            --resource-group "${{ vars.COSMOS_RESOURCE_GROUP }}" \
+            --source-database "$SOURCE_DB_NAME" \
+            --container "$BACKUP_CONTAINER_NAME" \
+            --destination-database "$DESTINATION_DB_NAME" \
+            --location "${{ vars.AZURE_REGION }}"
 
   # Retrieves the Static Web App code deployment token and saves it as a repository secret
   save_swa_token:

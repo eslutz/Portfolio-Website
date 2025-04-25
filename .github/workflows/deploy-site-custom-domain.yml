@@ -1,7 +1,7 @@
 #########################################################################################
 ##  SET CUSTOM DOMAIN
 #########################################################################################
-name: Deploy Site Custom Domain
+name: Deploy Portfolio Site Custom Domain
 
 #########################################################################################
 ##  WORKFLOW TRIGGER
@@ -33,9 +33,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check environment variables
+      - name: Validate custom domain
         run: |
-          .github/scripts/check_environment_variables.sh "${{ env.STATIC_WEB_APP_NAME }}" "${{ env.RESOURCE_GROUP_NAME }}" "${{ vars.CUSTOM_ROOT_DOMAIN }}"
+          # Validate required variables
+          if [ -z "${{ vars.CUSTOM_ROOT_DOMAIN }}" ]; then
+            echo "::error::CUSTOM_ROOT_DOMAIN is not set. Please set it as a repository variable."
+            exit 1
+          fi
+
+          # Validate CUSTOM_ROOT_DOMAIN is an apex domain
+          IFS='.' read -ra DOMAIN_PARTS <<< "${{ vars.CUSTOM_ROOT_DOMAIN }}"
+          if [ ${#DOMAIN_PARTS[@]} -ne 2 ]; then
+            echo "::error::CUSTOM_ROOT_DOMAIN must be an apex domain (e.g., example.com)"
+            exit 1
+          fi
+
+          echo "Validation passed: CUSTOM_ROOT_DOMAIN is set to ${{ vars.CUSTOM_ROOT_DOMAIN }}"
 
       - name: Azure login
         uses: azure/login@v2
@@ -146,19 +159,19 @@ jobs:
           FAILED=0
 
           # Create CNAME records for both domains
-          manage_dns_record "CNAME" "$ROOT_DOMAIN" "$HOSTNAME" "true" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
-          manage_dns_record "CNAME" "www.$ROOT_DOMAIN" "$HOSTNAME" "true" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
+          manage_dns_record --type "CNAME" --name "$ROOT_DOMAIN" --content "$HOSTNAME" --proxied "true" --cf-token "$CF_TOKEN" --zone-id "$ZONE_ID" || FAILED=1
+          manage_dns_record --type "CNAME" --name "www.$ROOT_DOMAIN" --content "$HOSTNAME" --proxied "true" --cf-token "$CF_TOKEN" --zone-id "$ZONE_ID" || FAILED=1
 
           # Create TXT validation records for both domains
-          manage_dns_record "TXT" "$ROOT_DOMAIN" "$ROOT_TOKEN" "false" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
-          manage_dns_record "TXT" "www.$ROOT_DOMAIN" "$WWW_TOKEN" "false" "$CF_TOKEN" "$ZONE_ID" || FAILED=1
+          manage_dns_record --type "TXT" --name "$ROOT_DOMAIN" --content "$ROOT_TOKEN" --proxied "false" --cf-token "$CF_TOKEN" --zone-id "$ZONE_ID" || FAILED=1
+          manage_dns_record --type "TXT" --name "www.$ROOT_DOMAIN" --content "$WWW_TOKEN" --proxied "false" --cf-token "$CF_TOKEN" --zone-id "$ZONE_ID" || FAILED=1
 
           echo "----------------------------------------"
           if [ $FAILED -eq 1 ]; then
-            echo "❌ DNS record management completed with errors"
+            echo "::error::DNS record management completed with errors"
             exit 1
           else
-            echo "✅ DNS record management completed successfully"
+            echo "DNS record management completed successfully"
           fi
 
       - name: Verification message

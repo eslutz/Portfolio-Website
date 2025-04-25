@@ -8,7 +8,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' exis
 }
 
 // Cosmos DB Database
-resource COSMOS_DATABASE 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = {
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = {
   parent: cosmosDbAccount
   name: databaseName
   properties: {
@@ -19,8 +19,8 @@ resource COSMOS_DATABASE 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@202
 }
 
 // Cosmos DB Container
-resource COSMOS_CONTAINER 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
-  parent: COSMOS_DATABASE
+resource cosmosDatabaseContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+  parent: cosmosDatabase
   name: containerName
   properties: {
     resource: {
@@ -32,3 +32,6 @@ resource COSMOS_CONTAINER 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
     }
   }
 }
+
+output databaseName string = cosmosDatabase.name
+output containerName string = cosmosDatabaseContainer.name

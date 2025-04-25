@@ -33,7 +33,7 @@ on:
 #########################################################################################
 # Prevents multiple parallel runs of the workflow on the same branch
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.run_id }}
   cancel-in-progress: true
 
 #########################################################################################

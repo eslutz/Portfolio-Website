@@ -1,12 +1,90 @@
 #!/bin/bash
 
 manage_dns_record() {
-  local RECORD_TYPE=$1
-  local RECORD_NAME=$2
-  local RECORD_CONTENT=$3
-  local PROXIED=$4
-  local CF_TOKEN=$5
-  local ZONE_ID=$6
+  # Default values
+  local RECORD_TYPE=""
+  local RECORD_NAME=""
+  local RECORD_CONTENT=""
+  local PROXIED="false"
+  local CF_TOKEN=""
+  local ZONE_ID=""
+
+  # Normalize long options into short options
+  NORMALIZED_ARGS=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --type)
+        NORMALIZED_ARGS+=("-t" "$2")
+        shift 2
+        ;;
+      --name)
+        NORMALIZED_ARGS+=("-n" "$2")
+        shift 2
+        ;;
+      --content)
+        NORMALIZED_ARGS+=("-c" "$2")
+        shift 2
+        ;;
+      --proxied)
+        NORMALIZED_ARGS+=("-p" "$2")
+        shift 2
+        ;;
+      --token)
+        NORMALIZED_ARGS+=("-k" "$2")
+        shift 2
+        ;;
+      --zone-id)
+        NORMALIZED_ARGS+=("-z" "$2")
+        shift 2
+        ;;
+      --*)
+        echo "Invalid option: $1" >&2
+        return 1
+        ;;
+      *)
+        NORMALIZED_ARGS+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  # Replace the original arguments with the normalized ones
+  set -- "${NORMALIZED_ARGS[@]}"
+
+  # Parse command line arguments with getopts
+  while getopts "t:n:c:p:k:z:" opt; do
+    case $opt in
+      t) RECORD_TYPE="$OPTARG" ;;
+      n) RECORD_NAME="$OPTARG" ;;
+      c) RECORD_CONTENT="$OPTARG" ;;
+      p) PROXIED="$OPTARG" ;;
+      k) CF_TOKEN="$OPTARG" ;;
+      z) ZONE_ID="$OPTARG" ;;
+      \?) echo "Invalid option: -$OPTARG" >&2; return 1 ;;
+    esac
+  done
+
+  # Validate required parameters
+  if [ -z "$RECORD_TYPE" ]; then
+    echo "::error::Record type is required (use -t or --type)"
+    return 1
+  fi
+  if [ -z "$RECORD_NAME" ]; then
+    echo "::error::Record name is required (use -n or --name)"
+    return 1
+  fi
+  if [ -z "$RECORD_CONTENT" ]; then
+    echo "::error::Record content is required (use -c or --content)"
+    return 1
+  fi
+  if [ -z "$CF_TOKEN" ]; then
+    echo "::error::Cloudflare token is required (use -k or --token)"
+    return 1
+  fi
+  if [ -z "$ZONE_ID" ]; then
+    echo "::error::Zone ID is required (use -z or --zone-id)"
+    return 1
+  fi
 
   # Get existing record of this type + name
   RECORD_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?type=$RECORD_TYPE&name=$RECORD_NAME" \
@@ -15,7 +93,7 @@ manage_dns_record() {
 
   # Check if the GET request was successful
   if ! echo "$RECORD_RESPONSE" | jq -e '.success' > /dev/null; then
-    echo "❌ Failed to check existing $RECORD_TYPE record for $RECORD_NAME: $(echo "$RECORD_RESPONSE" | jq -r '.errors[0].message')"
+    echo "::error::Failed to check existing $RECORD_TYPE record for $RECORD_NAME: $(echo "$RECORD_RESPONSE" | jq -r '.errors[0].message')"
     return 1
   fi
 
@@ -40,7 +118,7 @@ manage_dns_record() {
 
   if [ -n "$RECORD_ID" ]; then
     if [ "$CURRENT_CONTENT" = "$RECORD_CONTENT" ]; then
-      echo "✅ $RECORD_TYPE record for $RECORD_NAME: No changes needed (content matches)"
+      echo "$RECORD_TYPE record for $RECORD_NAME: No changes needed (content matches)"
       return 0
     fi
 
@@ -50,7 +128,7 @@ manage_dns_record() {
       --data "$DATA")
 
     if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-      echo "❌ Failed to update $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+      echo "::error::Failed to update $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
       return 1
     fi
     echo "✅ $RECORD_TYPE record for $RECORD_NAME: Updated successfully"
@@ -61,9 +139,9 @@ manage_dns_record() {
       --data "$DATA")
 
     if ! echo "$RESPONSE" | jq -e '.success' > /dev/null; then
-      echo "❌ Failed to create $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
+      echo "::error::Failed to create $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
       return 1
     fi
-    echo "✅ $RECORD_TYPE record for $RECORD_NAME: Created successfully"
+    echo "$RECORD_TYPE record for $RECORD_NAME: Created successfully"
   fi
 }
