@@ -88,3 +88,4 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
 // Outputs
 output staticWebAppName string = swaName
 output resourceGroupName string = resourceGroupName
+output cosmosDatabaseName string = cosmosDb.outputs.databaseName

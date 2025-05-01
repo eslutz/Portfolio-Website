@@ -9,6 +9,21 @@ name: Deploy Portfolio Site Infrastructure
 on:
   # Manual trigger for on-demand infrastructure deployment
   workflow_dispatch:
+    inputs:
+      backup_database_name:
+        description: 'Name of CosmosDB database to restore from backup (optional)'
+        required: false
+        type: string
+      backup_timestamp:
+        description: 'Specific timestamp for restoration (optional, format: YYYY-MM-DDThh:mm:ssZ)'
+        required: false
+        type: string
+      overwrite_database:
+        description: 'Allow overwriting existing database'
+        required: false
+        type: boolean
+        default: true
+
   # Automatic trigger on push to main branch for IAC changes
   push:
     branches:
@@ -42,6 +57,7 @@ jobs:
     outputs:
       staticWebAppName: ${{ steps.deploy-bicep.outputs.staticWebAppName }}
       resourceGroupName: ${{ steps.deploy-bicep.outputs.resourceGroupName }}
+      databaseName: ${{ steps.deploy-bicep.outputs.cosmosDatabaseName }}
     name: Deploy Infrastructure Job
     steps:
       - name: Checkout code
@@ -67,6 +83,65 @@ jobs:
             repoBranch=${{ github.ref_name }}
             existingCosmosDbAccountName=${{ vars.COSMOS_ACCOUNT_NAME }}
             existingCosmosDbResourceGroup=${{ vars.COSMOS_RESOURCE_GROUP }}
+
+  # Restores the Cosmos DB database from its latest backup
+  # Uses the database name from the infrastructure deployment
+  database_restore:
+    needs: deploy_infrastructure
+    runs-on: ubuntu-latest
+    name: Restore CosmosDB Database Job
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Restore CosmosDB Database
+        env:
+          COSMOS_ACCOUNT_NAME: ${{ vars.COSMOS_ACCOUNT_NAME }}
+          COSMOS_RESOURCE_GROUP: ${{ vars.COSMOS_RESOURCE_GROUP }}
+          AZURE_REGION: ${{ vars.AZURE_REGION }}
+          DESTINATION_DB_NAME: ${{ needs.deploy_infrastructure.outputs.databaseName }}
+          SOURCE_DB_NAME: ${{ github.event.inputs.backup_database_name || needs.deploy_infrastructure.outputs.databaseName }}
+        run: |
+          echo "Starting Cosmos DB restore with the following parameters:"
+          echo "COSMOS_ACCOUNT_NAME: $COSMOS_ACCOUNT_NAME"
+          echo "COSMOS_RESOURCE_GROUP: $COSMOS_RESOURCE_GROUP"
+          echo "AZURE_REGION: $AZURE_REGION"
+          echo "DESTINATION_DB_NAME: $DESTINATION_DB_NAME"
+          echo "SOURCE_DB_NAME: $SOURCE_DB_NAME"
+
+          # Make script executable
+          chmod +x .github/scripts/restore_cosmos_db.sh
+
+          # Construct command with mandatory parameters
+          RESTORE_CMD=".github/scripts/restore_cosmos_db.sh \
+            --account-name \"$COSMOS_ACCOUNT_NAME\" \
+            --resource-group \"$COSMOS_RESOURCE_GROUP\" \
+            --source-database \"$SOURCE_DB_NAME\" \
+            --destination-database \"$DESTINATION_DB_NAME\" \
+            --location \"$AZURE_REGION\""
+
+          # Add optional timestamp parameter if provided
+          if [ -n "${{ github.event.inputs.backup_timestamp }}" ]; then
+            RESTORE_CMD="$RESTORE_CMD --timestamp \"${{ github.event.inputs.backup_timestamp }}\""
+            echo "Using specified timestamp: ${{ github.event.inputs.backup_timestamp }}"
+          else
+            echo "Using latest available backup timestamp"
+          fi
+
+          # Add overwrite flag if enabled
+          if [ "${{ github.event.inputs.overwrite_database }}" == "true" ]; then
+            RESTORE_CMD="$RESTORE_CMD --overwrite"
+            echo "Overwrite flag enabled: existing database may be overwritten"
+          fi
+
+          echo "Executing restore command..."
+          eval $RESTORE_CMD
 
   # Retrieves the Static Web App code deployment token and saves it as a repository secret
   save_swa_token:
