@@ -34,21 +34,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate custom domain
+        env:
+          CUSTOM_ROOT_DOMAIN: ${{ vars.CUSTOM_ROOT_DOMAIN }}
         run: |
           # Validate required variables
-          if [ -z "${{ vars.CUSTOM_ROOT_DOMAIN }}" ]; then
+          if [ -z "$CUSTOM_ROOT_DOMAIN" ]; then
             echo "::error::CUSTOM_ROOT_DOMAIN is not set. Please set it as a repository variable."
             exit 1
           fi
 
           # Validate CUSTOM_ROOT_DOMAIN is an apex domain
-          IFS='.' read -ra DOMAIN_PARTS <<< "${{ vars.CUSTOM_ROOT_DOMAIN }}"
+          IFS='.' read -ra DOMAIN_PARTS <<< "$CUSTOM_ROOT_DOMAIN"
           if [ ${#DOMAIN_PARTS[@]} -ne 2 ]; then
             echo "::error::CUSTOM_ROOT_DOMAIN must be an apex domain (e.g., example.com)"
             exit 1
           fi
 
-          echo "Validation passed: CUSTOM_ROOT_DOMAIN is set to ${{ vars.CUSTOM_ROOT_DOMAIN }}"
+          echo "Validation passed: CUSTOM_ROOT_DOMAIN is set to $CUSTOM_ROOT_DOMAIN"
 
       - name: Azure login
         uses: azure/login@v2
@@ -58,10 +60,10 @@ jobs:
       # Get the Static Web App's default hostname
       - name: Get static web app hostname
         id: get-hostname
+        env:
+          SWA_NAME: ${{ env.STATIC_WEB_APP_NAME }}
+          RESOURCE_GROUP: ${{ env.RESOURCE_GROUP_NAME }}
         run: |
-          SWA_NAME="${{ env.STATIC_WEB_APP_NAME }}"
-          RESOURCE_GROUP="${{ env.RESOURCE_GROUP_NAME }}"
-
           HOSTNAME=$(az staticwebapp show \
             --name "$SWA_NAME" \
             --resource-group "$RESOURCE_GROUP" \
@@ -74,11 +76,11 @@ jobs:
       # The --no-wait flag is required to avoid blocking the workflow until the deployment is complete
       - name: Deploy Bicep template
         id: deploy-bicep
+        env:
+          SWA_NAME: ${{ env.STATIC_WEB_APP_NAME }}
+          RESOURCE_GROUP: ${{ env.RESOURCE_GROUP_NAME }}
+          ROOT_DOMAIN: ${{ vars.CUSTOM_ROOT_DOMAIN }}
         run: |
-          SWA_NAME="${{ env.STATIC_WEB_APP_NAME }}"
-          RESOURCE_GROUP="${{ env.RESOURCE_GROUP_NAME }}"
-          ROOT_DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
-
           az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --template-file ./iac/swacustomdomain.bicep \
@@ -94,11 +96,11 @@ jobs:
       # Retrieve the domain validation tokens with the az cli
       - name: Fetch domain validation tokens
         id: get-validation-tokens
+        env:
+          SWA_NAME: ${{ env.STATIC_WEB_APP_NAME }}
+          RESOURCE_GROUP: ${{ env.RESOURCE_GROUP_NAME }}
+          ROOT_DOMAIN: ${{ vars.CUSTOM_ROOT_DOMAIN }}
         run: |
-          SWA_NAME="${{ env.STATIC_WEB_APP_NAME }}"
-          RESOURCE_GROUP="${{ env.RESOURCE_GROUP_NAME }}"
-          ROOT_DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
-
           # Get root domain token
           ROOT_TOKEN=$(az staticwebapp hostname list \
             --name "$SWA_NAME" \
@@ -122,10 +124,10 @@ jobs:
       # Get the Cloudflare Zone ID for the specified domain
       - name: Get Cloudflare Zone ID
         id: get-zone-id
+        env:
+          CD_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ROOT_DOMAIN: ${{ vars.CUSTOM_ROOT_DOMAIN }}
         run: |
-          CF_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          ROOT_DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
-
           ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN" \
             -H "Authorization: Bearer $CF_TOKEN" \
             -H "Content-Type: application/json" | \
@@ -140,18 +142,18 @@ jobs:
 
       # Create CNAME and TXT validation records in Cloudflare
       - name: Create DNS Records in Cloudflare
+        env:
+          ROOT_DOMAIN: ${{ vars.CUSTOM_ROOT_DOMAIN }}
+          HOSTNAME: ${{ steps.get-hostname.outputs.defaultHostname }}
+          ROOT_TOKEN: ${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}
+          WWW_TOKEN: ${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE_ID: ${{ steps.get-zone-id.outputs.ZONE_ID }}
         run: |
           # Source the script to make the function available
           source .github/scripts/manage_dns_records.sh
 
           # Set variables
-          ROOT_DOMAIN="${{ vars.CUSTOM_ROOT_DOMAIN }}"
-          HOSTNAME="${{ steps.get-hostname.outputs.defaultHostname }}"
-          ROOT_TOKEN="${{ steps.get-validation-tokens.outputs.ROOT_TOKEN }}"
-          WWW_TOKEN="${{ steps.get-validation-tokens.outputs.WWW_TOKEN }}"
-          CF_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          ZONE_ID="${{ steps.get-zone-id.outputs.ZONE_ID }}"
-
           echo "Managing DNS records for $ROOT_DOMAIN..."
           echo "----------------------------------------"
 
@@ -175,10 +177,10 @@ jobs:
           fi
 
       - name: Verification message
+        env:
+          ROOT_DOMAIN: ${{ steps.deploy-bicep.outputs.rootDomainName }}
+          WWW_DOMAIN: ${{ steps.deploy-bicep.outputs.wwwDomainName }}
         run: |
-          ROOT_DOMAIN="${{ steps.deploy-bicep.outputs.rootDomainName }}"
-          WWW_DOMAIN="${{ steps.deploy-bicep.outputs.wwwDomainName }}"
-
           echo "Custom domain setup completed!"
           echo "Created/Updated DNS records in Cloudflare for domains:"
           echo "  - $ROOT_DOMAIN"

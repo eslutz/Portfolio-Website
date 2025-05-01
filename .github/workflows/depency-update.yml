@@ -48,9 +48,12 @@ jobs:
         run: npm install
 
       - name: Commit & push changes
+        env:
+          COMMIT_USER_EMAIL: ${{ vars.COMMIT_USER_EMAIL }}
+          COMMIT_USER_NAME: ${{ vars.COMMIT_USER_NAME }}
         run: |
-          git config --global user.email "${{ vars.COMMIT_USER_EMAIL }}"
-          git config --global user.name "${{ vars.COMMIT_USER_NAME }}"
+          git config --global user.email "$COMMIT_USER_EMAIL"
+          git config --global user.name "$COMMIT_USER_NAME"
           git add package.json package-lock.json
           git commit -m "Update dependencies to latest versions" || exit 0
           git push --force
