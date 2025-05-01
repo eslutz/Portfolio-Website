@@ -29,7 +29,7 @@ manage_dns_record() {
         NORMALIZED_ARGS+=("-p" "$2")
         shift 2
         ;;
-      --token)
+      --cf-token)
         NORMALIZED_ARGS+=("-k" "$2")
         shift 2
         ;;
