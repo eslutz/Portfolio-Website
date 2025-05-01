@@ -38,20 +38,34 @@ manage_dns_record() {
         shift 2
         ;;
       --*)
-        echo "Invalid option: $1" >&2
+        echo "::error::Unknown option: $1" >&2
         return 1
         ;;
+      -*)
+        # Handle short options
+        if [[ "$1" =~ ^-[tncpkz]$ ]]; then
+          NORMALIZED_ARGS+=("$1" "$2")
+          shift 2
+        else
+          echo "::error::Unknown option: $1" >&2
+          return 1
+        fi
+        ;;
       *)
-        NORMALIZED_ARGS+=("$1")
-        shift
+        echo "::error::Unexpected argument: $1" >&2
+        return 1
         ;;
     esac
   done
 
-  # Replace the original arguments with the normalized ones
+  # Reset the positional parameters to the normalized arguments
   set -- "${NORMALIZED_ARGS[@]}"
 
+  # Debug: Print the normalized arguments
+  echo "DEBUG: Normalized arguments: $@" >&2
+
   # Parse command line arguments with getopts
+  OPTIND=1 # Reset the option index
   while getopts "t:n:c:p:k:z:" opt; do
     case $opt in
       t) RECORD_TYPE="$OPTARG" ;;
@@ -60,9 +74,17 @@ manage_dns_record() {
       p) PROXIED="$OPTARG" ;;
       k) CF_TOKEN="$OPTARG" ;;
       z) ZONE_ID="$OPTARG" ;;
-      \?) echo "Invalid option: -$OPTARG" >&2; return 1 ;;
+      \?) echo "::error::Invalid option: -$OPTARG" >&2; return 1 ;;
+      :) echo "::error::Option -$OPTARG requires an argument" >&2; return 1 ;;
     esac
   done
+
+  # Debug: Print parsed values
+  echo "DEBUG: RECORD_TYPE: $RECORD_TYPE" >&2
+  echo "DEBUG: RECORD_NAME: $RECORD_NAME" >&2
+  echo "DEBUG: RECORD_CONTENT: $RECORD_CONTENT" >&2
+  echo "DEBUG: PROXIED: $PROXIED" >&2
+  echo "DEBUG: ZONE_ID: $ZONE_ID" >&2
 
   # Validate required parameters
   if [ -z "$RECORD_TYPE" ]; then
@@ -78,7 +100,7 @@ manage_dns_record() {
     return 1
   fi
   if [ -z "$CF_TOKEN" ]; then
-    echo "::error::Cloudflare token is required (use -k or --token)"
+    echo "::error::Cloudflare token is required (use --cf-token)"
     return 1
   fi
   if [ -z "$ZONE_ID" ]; then
@@ -131,7 +153,7 @@ manage_dns_record() {
       echo "::error::Failed to update $RECORD_TYPE record for $RECORD_NAME: $(echo "$RESPONSE" | jq -r '.errors[0].message')"
       return 1
     fi
-    echo "✅ $RECORD_TYPE record for $RECORD_NAME: Updated successfully"
+    echo "$RECORD_TYPE record for $RECORD_NAME: Updated successfully"
   else
     RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
       -H "Authorization: Bearer $CF_TOKEN" \
