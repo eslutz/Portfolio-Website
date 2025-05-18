@@ -44,4 +44,3 @@ resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2022-09-01' = {
 }
 
 output staticWebAppName string = staticWebApp.name
-output staticWebAppDefaultHostname string = staticWebApp.properties.defaultHostname
