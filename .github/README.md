@@ -1,6 +1,6 @@
 # Portfolio-Website
 
-[🌐 _Visit My Portfolio Site_](https://www.ericslutz.dev/)
+[🌐 _**Visit My Portfolio Site**_](https://www.ericslutz.dev/)
 
 ## Overview
 
