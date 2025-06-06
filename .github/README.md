@@ -1,13 +1,6 @@
 # Portfolio-Website
 
-[![Live Site](https://img.shields.io/badge/Live%20Site-ericslutz.dev-blue?style=for-the-badge&logo=azure&logoColor=white)](https://www.ericslutz.dev/)
-[![Azure Static Web Apps](https://img.shields.io/badge/Azure-Static%20Web%20Apps-0078d4?style=flat-square&logo=microsoftazure)](https://azure.microsoft.com/services/app-service/static/)
-[![Angular](https://img.shields.io/badge/Angular-17+-dd0031?style=flat-square&logo=angular)](https://angular.io/)
-[![.NET](https://img.shields.io/badge/.NET-8.0-512bd4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
-[![Azure Functions](https://img.shields.io/badge/Azure-Functions-0062ad?style=flat-square&logo=azurefunctions)](https://azure.microsoft.com/services/functions/)
-[![Cosmos DB](https://img.shields.io/badge/Azure-Cosmos%20DB-0078d4?style=flat-square&logo=microsoftazure)](https://azure.microsoft.com/services/cosmos-db/)
-
-[🌐 **Visit Live Site**](https://www.ericslutz.dev/)
+[🌐 _Visit My Portfolio Site_](https://www.ericslutz.dev/)
 
 ## Overview
 
@@ -94,7 +87,7 @@ architecture-beta
         group staticWebApp(server)[StaticWebApp] in resourceGroup
             service appSettings(database)[AppSettings] in staticWebApp
             service apiFunction(database)[ApiFunction] in staticWebApp
-            service webApp(cloud)[WebApp] in staticWebApp
+            service webApp(server)[WebApp] in staticWebApp
         group applicationInsights(cloud)[ApplicationInsights] in resourceGroup
             service appInsights(cloud)[AppInsights] in applicationInsights
             service workspace(cloud)[Workspace] in applicationInsights
