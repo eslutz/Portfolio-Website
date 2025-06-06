@@ -93,6 +93,7 @@ architecture-beta
     group resourceGroup(cloud)[ResourceGroup]
         group staticWebApp(server)[StaticWebApp] in resourceGroup
             service appSettings(database)[AppSettings] in staticWebApp
+            service apiFunction(database)[ApiFunction] in staticWebApp
             service webApp(cloud)[WebApp] in staticWebApp
         group applicationInsights(cloud)[ApplicationInsights] in resourceGroup
             service appInsights(cloud)[AppInsights] in applicationInsights
@@ -103,14 +104,18 @@ architecture-beta
             service cosmosDatabase(database)[Database] in cosmosDb
             service cosmosAccount(cloud)[Account] in cosmosDb
     junction junctionCenter
-    webApp:B --> T:workspace
-    appInsights:R --> L:workspace
-    appSettings:R --> L:webApp
-    cosmosContainer:R --> L:cosmosDatabase
-    cosmosDatabase:R --> L:cosmosAccount
-    webApp:R -- T:junctionCenter
+    %% app insights connections
+    appInsights:R -- L:workspace
     workspace:R -- B:junctionCenter
-    junctionCenter:R --> L:cosmosAccount
+    %% static web app connections
+    apiFunction:R -- L:webApp
+    appSettings:R -- L:apiFunction
+    webApp:T -- B:workspace
+    webApp:R -- T:junctionCenter
+    %% cosmos db connections
+    cosmosContainer:L -- R:cosmosDatabase
+    cosmosDatabase:L -- R:cosmosAccount
+    junctionCenter:R -- L:cosmosAccount
 ```
 
 ## Project Structure
