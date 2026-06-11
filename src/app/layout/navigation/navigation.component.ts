@@ -1,24 +1,23 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+
+import { OutsideClickDirective } from '../../shared/directives/outside-click.directive';
 
 @Component({
-    selector: 'app-navigation',
-    templateUrl: './navigation.component.html',
-    styleUrls: ['./navigation.component.css'],
-    standalone: false
+  selector: 'app-navigation',
+  templateUrl: './navigation.component.html',
+  styleUrls: ['./navigation.component.css'],
+  imports: [RouterLink, RouterLinkActive, OutsideClickDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavigationComponent {
+  readonly navOpen = signal(false);
 
-  outsideMobileNavClick(hasClickedOutside: any) {
-    if (hasClickedOutside) {
-      const navMenu = document.querySelector('.nav-container');
-
-      navMenu?.classList.remove('nav-open');
-    }
+  closeMobileNav(): void {
+    this.navOpen.set(false);
   }
 
-  mobileNavClick() {
-    const navMenu = document.querySelector('.nav-container');
-
-    navMenu?.classList.toggle('nav-open');
+  toggleMobileNav(): void {
+    this.navOpen.update((open) => !open);
   }
 }

@@ -1,12 +1,17 @@
 <header class="nav">
-  <div class="nav-container" (outsideClick)="outsideMobileNavClick($event)">
+  <div
+    class="nav-container"
+    [class.nav-open]="navOpen()"
+    (appOutsideClick)="closeMobileNav()">
     <a class="img-link" routerLink="/">
       <img
         class="nav-image"
         src="assets/images/computer_logo.png"
-        alt="Computer Logo" />
+        alt="Computer Logo"
+        width="128"
+        height="128" />
     </a>
-    <nav class="main-nav">
+    <nav class="main-nav" id="main-nav">
       <ul class="main-nav-list">
         <li>
           <a
@@ -14,7 +19,7 @@
             routerLink="/"
             routerLinkActive="active-link"
             [routerLinkActiveOptions]="{ exact: true }"
-            (click)="mobileNavClick()"
+            (click)="closeMobileNav()"
             >Home</a
           >
         </li>
@@ -23,7 +28,7 @@
             class="nav-link"
             routerLink="/projects"
             routerLinkActive="active-link"
-            (click)="mobileNavClick()"
+            (click)="closeMobileNav()"
             >Projects</a
           >
         </li>
@@ -32,13 +37,18 @@
             class="nav-link"
             routerLink="/achievements"
             routerLinkActive="active-link"
-            (click)="mobileNavClick()"
+            (click)="closeMobileNav()"
             >Achievements</a
           >
         </li>
       </ul>
     </nav>
-    <button class="btn-mobile-nav" (click)="mobileNavClick()" aria-label="menu">
+    <button
+      class="btn-mobile-nav"
+      (click)="toggleMobileNav()"
+      aria-controls="main-nav"
+      [attr.aria-expanded]="navOpen()"
+      [attr.aria-label]="navOpen() ? 'close menu' : 'open menu'">
       <i class="fa-solid fa-bars icon-mobile-nav" name="menu-outline"></i>
       <i class="fa-solid fa-xmark icon-mobile-nav" name="close-outline"></i>
     </button>

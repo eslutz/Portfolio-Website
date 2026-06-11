@@ -1,41 +1,47 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, of } from 'rxjs';
+
 import { Footer } from './footer.interface';
 import { PortfolioApiService } from '../../shared/services/portfolio-api.service';
+
+interface FooterState {
+  loading: boolean;
+  error: string | null;
+  footer: Footer | null;
+}
 
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.css'],
-  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FooterComponent implements OnInit, OnDestroy {
-  footer: Footer | null = null;
-  currentYear: number = new Date().getFullYear();
-  isLoading: boolean = true;
-  error: string | null = null;
-  private destroy$ = new Subject<void>();
+export class FooterComponent {
+  readonly currentYear = new Date().getFullYear();
 
-  constructor(private portfolioApi: PortfolioApiService) {}
+  private readonly portfolioApi = inject(PortfolioApiService);
 
-  ngOnInit(): void {
-    this.portfolioApi
-      .getComponentData<Footer>('footer')
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => (this.isLoading = false))
+  readonly state = toSignal(
+    this.portfolioApi.getComponentData<Footer>('footer').pipe(
+      map(([footer]): FooterState => {
+        if (!footer) {
+          return {
+            loading: false,
+            error: 'Footer content not found',
+            footer: null,
+          };
+        }
+        return { loading: false, error: null, footer };
+      }),
+      catchError(() =>
+        of<FooterState>({
+          loading: false,
+          error: 'Failed to load footer content',
+          footer: null,
+        })
       )
-      .subscribe({
-        next: ([footerData]) => (this.footer = footerData),
-        error: (error) => {
-          console.error('Error fetching footer data:', error);
-          this.error = 'Failed to load footer content';
-        },
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+    ),
+    { initialValue: { loading: true, error: null, footer: null } }
+  );
 }

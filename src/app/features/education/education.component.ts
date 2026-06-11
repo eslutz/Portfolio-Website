@@ -1,12 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+
 import { Education } from './education.interface';
 
 @Component({
   selector: 'app-education',
   templateUrl: './education.component.html',
-  styleUrls: ['./education.component.css'],
-  standalone: false
+  imports: [DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EducationComponent {
-  @Input() education!: Education;
+  readonly education = input.required<Education>();
 }

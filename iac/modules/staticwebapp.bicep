@@ -6,11 +6,13 @@ param cosmosDbAccountId string
 param cosmosDbName string
 param cosmosContainerName string
 param appInsightsId string
+param tags object = {}
 
 // Static Web App
-resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
+resource staticWebApp 'Microsoft.Web/staticSites@2024-04-01' = {
   name: name
   location: location
+  tags: tags
   sku: {
     name: 'Free'
     tier: 'Free'
@@ -31,16 +33,16 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
 }
 
 // Static Web App Function App Settings
-resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2022-09-01' = {
+resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2024-04-01' = {
   parent: staticWebApp
   name: 'appsettings'
   properties: {
-    COSMOS_DB_CONNECTION_STRING: listConnectionStrings(cosmosDbAccountId, '2023-04-15').connectionStrings[0].connectionString
+    COSMOS_DB_CONNECTION_STRING: listConnectionStrings(cosmosDbAccountId, '2024-11-15').connectionStrings[0].connectionString
     COSMOS_DATABASE: cosmosDbName
     COSMOS_CONTAINER: cosmosContainerName
     APPLICATIONINSIGHTS_CONNECTION_STRING: reference(appInsightsId, '2020-02-02').ConnectionString
-    APPINSIGHTS_INSTRUMENTATIONKEY: reference(appInsightsId, '2020-02-02').InstrumentationKey
   }
 }
 
 output staticWebAppName string = staticWebApp.name
+output defaultHostname string = staticWebApp.properties.defaultHostname

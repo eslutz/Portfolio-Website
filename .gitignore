@@ -50,6 +50,10 @@ local.settings.json
 # Azure Bicep parameters file
 *.parameters.json
 
+# Database backups
+portfoliositedb_backup.json
+*_backup.json
+
 # User-specific files
 *.suo
 *.user

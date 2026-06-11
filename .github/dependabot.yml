@@ -30,3 +30,15 @@ updates:
     reviewers:
       - "eslutz"
     versioning-strategy: increase
+
+  - package-ecosystem: "nuget"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      time: "04:00"
+      timezone: "America/Detroit"
+    labels:
+      - "nuget"
+      - "dependencies"
+    reviewers:
+      - "eslutz"

@@ -1,44 +1,52 @@
 <section class="achievements" id="achievements">
+  <h1 class="visually-hidden">Achievements</h1>
   <section class="education" id="education">
-    <h1 class="container loading" *ngIf="loadingStates.education">
-      Loading Education
-    </h1>
-    <h1 class="container loading-error" *ngIf="errors.education">
-      {{ errors.education }}
-    </h1>
-    <app-education
-      *ngIf="!loadingStates.education && !errors.education && education"
-      [education]="education">
-    </app-education>
+    @if (educationState().loading) {
+      <p class="container loading" role="status" aria-live="polite">
+        Loading Education
+      </p>
+    } @else if (educationState().error) {
+      <p class="container loading-error" role="alert">
+        {{ educationState().error }}
+      </p>
+    } @else {
+      @if (educationState().data; as education) {
+        <app-education [education]="education"></app-education>
+      }
+    }
   </section>
 
-  <section class="certificaitions light-bg" id="certifications">
-    <h1 class="container loading" *ngIf="loadingStates.certifications">
-      Loading Certifications
-    </h1>
-    <h1 class="container loading-error" *ngIf="errors.certifications">
-      {{ errors.certifications }}
-    </h1>
-    <app-certifications
-      *ngIf="
-        !loadingStates.certifications &&
-        !errors.certifications &&
-        certifications.length
-      "
-      [certifications]="certifications">
-    </app-certifications>
+  <section class="certifications light-bg" id="certifications">
+    @if (certificationsState().loading) {
+      <p class="container loading" role="status" aria-live="polite">
+        Loading Certifications
+      </p>
+    } @else if (certificationsState().error) {
+      <p class="container loading-error" role="alert">
+        {{ certificationsState().error }}
+      </p>
+    } @else {
+      @if (certificationsState().data; as certifications) {
+        <app-certifications
+          [certifications]="certifications"></app-certifications>
+      }
+    }
   </section>
 
   <section class="work-recognition" id="work-recognition">
-    <h1 class="container loading" *ngIf="loadingStates.recognition">
-      Loading Recognition
-    </h1>
-    <h1 class="container loading-error" *ngIf="errors.recognition">
-      {{ errors.recognition }}
-    </h1>
-    <app-work-recognition
-      *ngIf="!loadingStates.recognition && !errors.recognition && recognition"
-      [workRecognition]="recognition">
-    </app-work-recognition>
+    @if (recognitionState().loading) {
+      <p class="container loading" role="status" aria-live="polite">
+        Loading Recognition
+      </p>
+    } @else if (recognitionState().error) {
+      <p class="container loading-error" role="alert">
+        {{ recognitionState().error }}
+      </p>
+    } @else {
+      @if (recognitionState().data; as recognition) {
+        <app-work-recognition
+          [workRecognition]="recognition"></app-work-recognition>
+      }
+    }
   </section>
 </section>

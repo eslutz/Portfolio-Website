@@ -1,41 +1,44 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject, finalize, map, takeUntil } from 'rxjs';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, of } from 'rxjs';
+
 import { Project } from '../project/project.interface';
+import { ProjectComponent } from '../project/project.component';
 import { PortfolioApiService } from '../../shared/services/portfolio-api.service';
+
+interface ProjectsState {
+  loading: boolean;
+  error: string | null;
+  projects: Project[];
+}
 
 @Component({
   selector: 'app-projects',
   templateUrl: './projects.component.html',
   styleUrls: ['./projects.component.css'],
-  standalone: false,
+  imports: [ProjectComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectsComponent implements OnInit, OnDestroy {
-  projects: Project[] = [];
-  isLoading: boolean = true;
-  error: string | null = null;
-  private destroy$ = new Subject<void>();
+export class ProjectsComponent {
+  private readonly portfolioApi = inject(PortfolioApiService);
 
-  constructor(private portfolioApi: PortfolioApiService) {}
-
-  ngOnInit(): void {
-    this.portfolioApi
-      .getComponentData<Project>('project')
-      .pipe(
-        map((projects) => projects.sort((a, b) => a.order - b.order)),
-        takeUntil(this.destroy$),
-        finalize(() => (this.isLoading = false))
+  readonly state = toSignal(
+    this.portfolioApi.getComponentData<Project>('project').pipe(
+      map(
+        (projects): ProjectsState => ({
+          loading: false,
+          error: null,
+          projects: projects.toSorted((a, b) => a.order - b.order),
+        })
+      ),
+      catchError(() =>
+        of<ProjectsState>({
+          loading: false,
+          error: 'Failed to load projects',
+          projects: [],
+        })
       )
-      .subscribe({
-        next: (sortedProjects) => (this.projects = sortedProjects),
-        error: (error) => {
-          console.error('Error fetching projects data:', error);
-          this.error = 'Failed to load projects';
-        },
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+    ),
+    { initialValue: { loading: true, error: null, projects: [] } }
+  );
 }

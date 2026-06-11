@@ -7,12 +7,12 @@ param rootDomain string
 var wwwDomain = 'www.${rootDomain}'
 
 // Get reference to existing Static Web App
-resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' existing = {
+resource staticWebApp 'Microsoft.Web/staticSites@2024-04-01' existing = {
   name: staticWebAppName
 }
 
 // Custom root domain
-resource customDomainRoot 'Microsoft.Web/staticSites/customDomains@2022-09-01' = {
+resource customDomainRoot 'Microsoft.Web/staticSites/customDomains@2024-04-01' = {
   parent: staticWebApp
   name: rootDomain
   properties: {
@@ -21,7 +21,7 @@ resource customDomainRoot 'Microsoft.Web/staticSites/customDomains@2022-09-01' =
 }
 
 // Custom www domain
-resource customDomainWWW 'Microsoft.Web/staticSites/customDomains@2022-09-01' = {
+resource customDomainWWW 'Microsoft.Web/staticSites/customDomains@2024-04-01' = {
   parent: staticWebApp
   name: wwwDomain
   properties: {

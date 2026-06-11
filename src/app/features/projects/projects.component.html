@@ -1,16 +1,21 @@
 <section class="projects" id="projects">
   <div class="container">
-    <h1 class="loading" *ngIf="isLoading">Loading Projects</h1>
-    <h1 class="loading-error" *ngIf="error">{{ error }}</h1>
-    <ng-container *ngIf="!isLoading && !error">
+    <h1 class="visually-hidden">Projects</h1>
+    @if (state().loading) {
+      <p class="loading" role="status" aria-live="polite">Loading Projects</p>
+    } @else if (state().error) {
+      <p class="loading-error" role="alert">{{ state().error }}</p>
+    } @else {
       <h2 class="heading-secondary">Projects</h2>
-      <div *ngIf="projects.length === 0">No projects to display.</div>
-      <div *ngIf="projects.length > 0">
-        <app-project
-          *ngFor="let project of projects"
-          [project]="project"
-          class="project"></app-project>
-      </div>
-    </ng-container>
+      @if (state().projects.length === 0) {
+        <div>No projects to display.</div>
+      } @else {
+        <div>
+          @for (project of state().projects; track project.id) {
+            <app-project [project]="project" class="project"></app-project>
+          }
+        </div>
+      }
+    }
   </div>
 </section>

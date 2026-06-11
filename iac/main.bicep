@@ -14,6 +14,11 @@ param repoBranch string
 param existingCosmosDbAccountName string
 @description('The resource group of the existing Cosmos DB account')
 param existingCosmosDbResourceGroup string
+@description('Tags applied to all resources')
+param tags object = {
+  application: 'portfolio-website'
+  managedBy: 'bicep'
+}
 
 @description('The name of the resource group')
 var resourceGroupName = '${appName}-resource-group'
@@ -31,18 +36,19 @@ var appInsights = {
 var swaName = '${appName}-swa'
 
 // Create Resource Group
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: resourceGroupName
   location: location
+  tags: tags
 }
 
 // Reference existing Cosmos DB Resource Group
-resource existingCosmosDbRG 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+resource existingCosmosDbRG 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   name: existingCosmosDbResourceGroup
 }
 
 // Reference existing Cosmos DB Account
-resource existingCosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' existing = {
+resource existingCosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' existing = {
   scope: existingCosmosDbRG
   name: existingCosmosDbAccountName
 }
@@ -55,6 +61,7 @@ module cosmosDb 'modules/cosmosdb.bicep' = {
     existingAccountName: existingCosmosDbAccountName
     databaseName: cosmos.dbName
     containerName: cosmos.containerName
+    tags: tags
   }
 }
 
@@ -66,6 +73,7 @@ module applicationInsights 'modules/appinsights.bicep' = {
     location: swaLocation
     workspaceName: appInsights.workspaceName
     appInsightsName: appInsights.name
+    tags: tags
   }
 }
 
@@ -82,9 +90,13 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
     cosmosDbName: cosmos.dbName
     cosmosContainerName: cosmos.containerName
     appInsightsId: applicationInsights.outputs.appInsightsId
+    tags: tags
   }
 }
 
 // Outputs
 output staticWebAppName string = swaName
 output resourceGroupName string = resourceGroupName
+output defaultHostname string = staticWebApp.outputs.defaultHostname
+output cosmosDatabaseName string = cosmosDb.outputs.databaseName
+output cosmosContainerName string = cosmosDb.outputs.containerName

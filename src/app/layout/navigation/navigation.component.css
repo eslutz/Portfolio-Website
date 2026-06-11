@@ -1,6 +1,14 @@
 /**************/
 /* NAVIGATION */
 /**************/
+:host {
+  display: block;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
 .nav {
   background-color: #eee;
   -webkit-box-shadow: 0 5px 5px #eee;
@@ -30,6 +38,7 @@
 
 .nav-image {
   height: 5rem;
+  width: auto;
 }
 
 .main-nav-list {

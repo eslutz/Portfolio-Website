@@ -5,7 +5,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  scroll-behavior: smooth;
 }
 
 @font-face {
@@ -19,6 +18,7 @@
 
 html {
   font-family: 'Mona Sans';
+  scroll-behavior: smooth;
   font-size: 62.5%;
   scroll-padding-top: 70px;
 }
@@ -237,6 +237,20 @@ p {
 .u-flex-col {
   flex-direction: column;
   align-items: flex-start;
+}
+
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 @keyframes ellipsis {

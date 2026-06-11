@@ -1,5 +1,6 @@
 .gif-image {
   border-radius: 5px;
+  height: auto;
   max-width: 50rem;
   margin: 0 auto;
 }

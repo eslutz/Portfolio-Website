@@ -1,23 +1,44 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-error',
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.css'],
-  standalone: false,
+  imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ErrorComponent {
-  countdown: number = 15;
+export class ErrorComponent implements OnInit, OnDestroy {
+  readonly countdown = signal(15);
 
-  constructor(private router: Router) {}
+  private readonly router = inject(Router);
+  private intervalId?: ReturnType<typeof setInterval>;
 
-  ngOnInit() {
-    setInterval(() => {
-      this.countdown--;
-      if (this.countdown === 0) {
+  ngOnInit(): void {
+    this.intervalId = setInterval(() => {
+      this.countdown.update((value) => value - 1);
+      if (this.countdown() === 0) {
+        this.clearCountdown();
         this.router.navigateByUrl('/');
       }
     }, 1000);
+  }
+
+  ngOnDestroy(): void {
+    this.clearCountdown();
+  }
+
+  private clearCountdown(): void {
+    if (this.intervalId !== undefined) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+    }
   }
 }

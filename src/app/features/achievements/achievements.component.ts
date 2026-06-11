@@ -1,116 +1,120 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Observable, catchError, map, of } from 'rxjs';
+
 import { Certification } from '../certifications/certification.interface';
+import { CertificationsComponent } from '../certifications/certifications.component';
 import { Education } from '../education/education.interface';
+import { EducationComponent } from '../education/education.component';
 import { WorkRecognition } from '../work-recognition/work-recognition.interface';
+import { WorkRecognitionComponent } from '../work-recognition/work-recognition.component';
 import { PortfolioApiService } from '../../shared/services/portfolio-api.service';
-import { Subject, finalize, map, takeUntil } from 'rxjs';
+
+interface SectionState<T> {
+  loading: boolean;
+  error: string | null;
+  data: T | null;
+}
 
 @Component({
   selector: 'app-achievements',
   templateUrl: './achievements.component.html',
-  styleUrls: ['./achievements.component.css'],
-  standalone: false,
+  imports: [EducationComponent, CertificationsComponent, WorkRecognitionComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AchievementsComponent implements OnInit, OnDestroy {
-  education: Education | null = null;
-  certifications: Certification[] = [];
-  recognition: WorkRecognition | null = null;
+export class AchievementsComponent {
+  private readonly portfolioApi = inject(PortfolioApiService);
 
-  loadingStates = {
-    education: true,
-    certifications: true,
-    recognition: true,
-  };
+  readonly educationState = toSignal(
+    this.toSectionState(
+      this.portfolioApi.getComponentData<Education>('education').pipe(
+        map(([education]): Education | null => {
+          if (!education) {
+            return null;
+          }
+          return {
+            ...education,
+            degrees: education.degrees.toSorted(
+              (a, b) => b.graduationYear - a.graduationYear
+            ),
+          };
+        })
+      ),
+      'education'
+    ),
+    { initialValue: this.loadingState<Education>() }
+  );
 
-  errors = {
-    education: null as string | null,
-    certifications: null as string | null,
-    recognition: null as string | null,
-  };
-
-  private destroy$ = new Subject<void>();
-
-  constructor(private portfolioApi: PortfolioApiService) {}
-
-  ngOnInit(): void {
-    this.loadEducation();
-    this.loadCertifications();
-    this.loadRecognition();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private loadEducation(): void {
-    this.portfolioApi
-      .getComponentData<Education>('education')
-      .pipe(
-        map(([educationData]) => ({
-          ...educationData,
-          degrees: educationData.degrees.sort(
-            (a, b) => b.graduationYear - a.graduationYear
-          ),
-        })),
-        takeUntil(this.destroy$),
-        finalize(() => (this.loadingStates.education = false))
-      )
-      .subscribe({
-        next: (data) => (this.education = data),
-        error: (error) => {
-          console.error('Error fetching education data:', error);
-          this.errors.education = 'Failed to load education';
-        },
-      });
-  }
-
-  private loadCertifications(): void {
-    this.portfolioApi
-      .getComponentData<Certification>('certification')
-      .pipe(
-        map((certs) =>
-          certs.sort(
+  readonly certificationsState = toSignal(
+    this.toSectionState(
+      this.portfolioApi.getComponentData<Certification>('certification').pipe(
+        map((certifications): Certification[] | null => {
+          if (certifications.length === 0) {
+            return null;
+          }
+          return certifications.toSorted(
             (a, b) =>
               new Date(b.earned).getTime() - new Date(a.earned).getTime()
-          )
-        ),
-        takeUntil(this.destroy$),
-        finalize(() => (this.loadingStates.certifications = false))
+          );
+        })
+      ),
+      'certifications'
+    ),
+    { initialValue: this.loadingState<Certification[]>() }
+  );
+
+  readonly recognitionState = toSignal(
+    this.toSectionState(
+      this.portfolioApi.getComponentData<WorkRecognition>('recognition').pipe(
+        map(([recognition]): WorkRecognition | null => {
+          if (!recognition) {
+            return null;
+          }
+          return {
+            ...recognition,
+            companies: recognition.companies.map((company) => ({
+              ...company,
+              recognition: company.recognition.toSorted((a, b) => {
+                if (!a.date && !b.date) return 0;
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+              }),
+            })),
+          };
+        })
+      ),
+      'recognition'
+    ),
+    { initialValue: this.loadingState<WorkRecognition>() }
+  );
+
+  private toSectionState<T>(
+    data$: Observable<T | null>,
+    section: string
+  ): Observable<SectionState<T>> {
+    return data$.pipe(
+      map((data): SectionState<T> => {
+        if (data === null) {
+          return {
+            loading: false,
+            error: `No ${section} content found`,
+            data: null,
+          };
+        }
+        return { loading: false, error: null, data };
+      }),
+      catchError(() =>
+        of<SectionState<T>>({
+          loading: false,
+          error: `Failed to load ${section}`,
+          data: null,
+        })
       )
-      .subscribe({
-        next: (data) => (this.certifications = data),
-        error: (error) => {
-          console.error('Error fetching certifications data:', error);
-          this.errors.certifications = 'Failed to load certifications';
-        },
-      });
+    );
   }
 
-  private loadRecognition(): void {
-    this.portfolioApi
-      .getComponentData<WorkRecognition>('recognition')
-      .pipe(
-        map(([recognitionData]) => {
-          recognitionData.companies.forEach((company) => {
-            company.recognition.sort((a, b) => {
-              if (!a.date && !b.date) return 0;
-              if (!a.date) return 1;
-              if (!b.date) return -1;
-              return new Date(b.date).getTime() - new Date(a.date).getTime();
-            });
-          });
-          return recognitionData;
-        }),
-        takeUntil(this.destroy$),
-        finalize(() => (this.loadingStates.recognition = false))
-      )
-      .subscribe({
-        next: (data) => (this.recognition = data),
-        error: (error) => {
-          console.error('Error fetching recognition data:', error);
-          this.errors.recognition = 'Failed to load recognition';
-        },
-      });
+  private loadingState<T>(): SectionState<T> {
+    return { loading: true, error: null, data: null };
   }
 }

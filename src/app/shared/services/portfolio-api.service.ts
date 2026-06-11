@@ -1,17 +1,23 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { shareReplay, tap, catchError } from 'rxjs/operators';
+import { shareReplay, catchError } from 'rxjs/operators';
 import { ApiError, ApiErrorType } from '../models/api-error.model';
+
+interface CacheEntry {
+  observable: Observable<unknown[]>;
+  fetchedAt: number;
+}
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 @Injectable({
   providedIn: 'root',
 })
 export class PortfolioApiService {
-  private readonly apiUrl = '/api/GetCosmosData';
-  private readonly cacheMap = new Map<string, Observable<any>>();
-
-  constructor(private http: HttpClient) {}
+  private readonly apiUrl = '/api/components';
+  private readonly cacheMap = new Map<string, CacheEntry>();
+  private readonly http = inject(HttpClient);
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let apiError: ApiError;
@@ -68,28 +74,33 @@ export class PortfolioApiService {
         break;
     }
 
-    // Log the error for debugging purposes
     console.error('API Error:', apiError);
 
     return throwError(() => apiError);
   }
 
   getComponentData<T>(component: string): Observable<T[]> {
-    if (!this.cacheMap.has(component)) {
-      const request = this.http
-        .post<T[]>(this.apiUrl, { component: component })
-        .pipe(
-          catchError((error) => this.handleError(error)),
-          shareReplay({
-            bufferSize: 1,
-            windowTime: 24 * 60 * 60 * 1000, // 24 hours
-            refCount: true,
-          })
-        );
-
-      this.cacheMap.set(component, request);
+    const cached = this.cacheMap.get(component);
+    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+      // The cache stores untyped entries; each caller fixes T at this boundary.
+      return cached.observable as Observable<T[]>;
     }
-    return this.cacheMap.get(component)!;
+
+    this.cacheMap.delete(component);
+
+    const request = this.http
+      .get<T[]>(`${this.apiUrl}/${component.toLowerCase()}`)
+      .pipe(
+        catchError((error: HttpErrorResponse) => this.handleError(error)),
+        shareReplay(1)
+      );
+
+    this.cacheMap.set(component, {
+      observable: request,
+      fetchedAt: Date.now(),
+    });
+
+    return request;
   }
 
   clearCache(component?: string): void {

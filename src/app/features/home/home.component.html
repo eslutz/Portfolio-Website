@@ -1,15 +1,20 @@
-<h1 class="container loading" *ngIf="isLoading">Loading</h1>
-<h1 class="container loading-error" *ngIf="error">{{ error }}</h1>
-<ng-container *ngIf="!isLoading && !error && home">
-  <header class="light-bg">
-    <div class="heading-container">
-      <h1 class="heading-primary">{{ home.title }}</h1>
-    </div>
-  </header>
-  <section class="about" id="about">
-    <div class="container">
-      <h2 class="heading-secondary">Background</h2>
-      <p [innerHTML]="home.content"></p>
-    </div>
-  </section>
-</ng-container>
+@if (state().loading) {
+  <p class="container loading" role="status" aria-live="polite">Loading</p>
+} @else if (state().error) {
+  <h1 class="visually-hidden">Home</h1>
+  <p class="container loading-error" role="alert">{{ state().error }}</p>
+} @else {
+  @if (state().home; as home) {
+    <header class="light-bg">
+      <div class="heading-container">
+        <h1 class="heading-primary">{{ home.title }}</h1>
+      </div>
+    </header>
+    <section class="about" id="about">
+      <div class="container">
+        <h2 class="heading-secondary">Background</h2>
+        <p [innerHTML]="home.content"></p>
+      </div>
+    </section>
+  }
+}
