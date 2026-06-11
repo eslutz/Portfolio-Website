@@ -14,6 +14,8 @@ param repoBranch string
 param existingCosmosDbAccountName string
 @description('The resource group of the existing Cosmos DB account')
 param existingCosmosDbResourceGroup string
+@description('The URL to monitor for availability')
+param siteUrl string = 'https://www.ericslutz.dev'
 @description('Tags applied to all resources')
 param tags object = {
   application: 'portfolio-website'
@@ -73,6 +75,7 @@ module applicationInsights 'modules/appinsights.bicep' = {
     location: swaLocation
     workspaceName: appInsights.workspaceName
     appInsightsName: appInsights.name
+    siteUrl: siteUrl
     tags: tags
   }
 }
