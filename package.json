@@ -24,7 +24,9 @@
     "swa:start": "npm run build && dotnet build && swa start ./dist/portfolio/browser --api-location=./api",
     "lint": "ng lint",
     "test": "ng test",
-    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:angular:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:adapters": "python3 scripts/test-python-game-adapters.py",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless && python3 scripts/test-python-game-adapters.py",
     "migrate:media": "node scripts/migrate-media-to-blob.mjs"
   },
   "private": true,
@@ -37,6 +39,7 @@
     "@angular/platform-browser": "^22.0.1",
     "@angular/platform-browser-dynamic": "^22.0.1",
     "@angular/router": "^22.0.1",
+    "pyodide": "^314.0.0",
     "rxjs": "^7.8.2",
     "tslib": "^2.8.1",
     "zone.js": "^0.16.2"

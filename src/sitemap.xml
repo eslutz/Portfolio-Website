@@ -20,4 +20,16 @@
       <changefreq>monthly</changefreq>
    </url>
 
+   <url>
+      <loc>https://www.ericslutz.dev/games/space-adventure/</loc>
+      <lastmod>2026-06-11</lastmod>
+      <changefreq>monthly</changefreq>
+   </url>
+
+   <url>
+      <loc>https://www.ericslutz.dev/games/guessing-game/</loc>
+      <lastmod>2026-06-11</lastmod>
+      <changefreq>monthly</changefreq>
+   </url>
+
 </urlset>

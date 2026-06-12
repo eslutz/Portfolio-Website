@@ -7,9 +7,22 @@
         <p class="cms-user">Signed in as {{ user.userDetails }}</p>
       }
     </div>
-    <button type="button" class="secondary-button" (click)="signOut()">
-      Sign out
-    </button>
+    <div class="button-row">
+      <label class="theme-control" for="cms-theme">
+        Theme
+        <select
+          id="cms-theme"
+          [value]="themePreference()"
+          (change)="setThemePreference($event)">
+          @for (option of themeOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="secondary-button" (click)="signOut()">
+        Sign out
+      </button>
+    </div>
   </header>
 
   <nav class="cms-tabs" aria-label="CMS sections">

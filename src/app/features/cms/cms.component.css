@@ -1,8 +1,7 @@
 .cms {
-  --border: #d9dee7;
-  --ink: #25282c;
-  --muted: #68707a;
-  background: #f8f9fb;
+  background: var(--cms-bg);
+  color: var(--cms-ink);
+  color-scheme: var(--cms-color-scheme);
   min-height: 100vh;
   padding: 3.2rem;
 }
@@ -28,33 +27,15 @@
   justify-content: space-between;
 }
 
-.cms-header {
-  padding: 1.6rem 0 2.4rem;
-}
-
 .cms-tabs {
   justify-content: flex-start;
   padding-bottom: 2.4rem;
 }
 
-.cms h1,
-.cms h2,
-.cms h3,
-.cms legend {
-  color: var(--ink);
-}
-
-.cms h1 {
-  font-size: 3.6rem;
-  font-weight: 650;
-  line-height: 1.1;
-}
-
 .cms-kicker,
 .cms-user {
-  color: var(--muted);
+  color: var(--cms-muted);
   font-size: 1.4rem;
-  font-weight: 500;
 }
 
 .cms-tabs button,
@@ -72,8 +53,8 @@
 
 .cms-tabs button,
 .secondary-button {
-  background: #dfe5ec;
-  color: #2f3337;
+  background: var(--cms-control);
+  color: var(--cms-control-ink);
 }
 
 .cms-tabs button.active,
@@ -83,26 +64,21 @@
 }
 
 .danger-button {
-  background: #f3d7dc;
-  color: #9b1730;
+  background: var(--cms-danger-bg);
+  color: var(--cms-danger-ink);
 }
 
 .cms-panel,
 .editor-card,
 .nested-card {
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--cms-surface);
+  border: 1px solid var(--cms-border);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 1.6rem;
   min-width: 0;
   padding: 2rem;
-}
-
-.cms-panel {
-  gap: 2rem;
-  padding: 2.4rem;
 }
 
 .grid {
@@ -115,7 +91,7 @@
 }
 
 .cms label {
-  color: #464d56;
+  color: var(--cms-label);
   display: flex;
   flex-direction: column;
   font-size: 1.4rem;
@@ -126,9 +102,10 @@
 .cms input,
 .cms select,
 .cms textarea {
-  border: 1px solid #cdd4df;
+  background: var(--cms-input);
+  border: 1px solid var(--cms-border);
   border-radius: 6px;
-  color: var(--ink);
+  color: var(--cms-ink);
   font: inherit;
   font-size: 1.6rem;
   min-height: 4.4rem;
@@ -151,13 +128,13 @@
 }
 
 .cms-alert.error {
-  background: #fde7ec;
-  color: #8a1730;
+  background: var(--cms-error-bg);
+  color: var(--cms-error-ink);
 }
 
 .cms-alert.success {
-  background: #e5f5ed;
-  color: #1f6a43;
+  background: var(--cms-success-bg);
+  color: var(--cms-success-ink);
 }
 
 @media (max-width: 760px) {

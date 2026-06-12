@@ -7,10 +7,12 @@ import { CmsAuthService } from './cms-auth.service';
 import { CmsComponent } from './cms.component';
 import { PortfolioApiService } from '../../shared/services/portfolio-api.service';
 import { RecognitionType } from '../work-recognition/work-recognition.interface';
+import { ThemeService } from '../../shared/services/theme.service';
 
 describe('CmsComponent', () => {
   let fixture: ComponentFixture<CmsComponent>;
   let meta: Meta;
+  let themeService: ThemeService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -87,6 +89,7 @@ describe('CmsComponent', () => {
     }).compileComponents();
 
     meta = TestBed.inject(Meta);
+    themeService = TestBed.inject(ThemeService);
     fixture = TestBed.createComponent(CmsComponent);
   });
 
@@ -96,5 +99,28 @@ describe('CmsComponent', () => {
     expect(meta.getTag('name="robots"')?.content).toBe(
       'noindex,nofollow,noarchive'
     );
+  });
+
+  it('activates the CMS theme controls while active', () => {
+    spyOn(themeService, 'activateCmsTheme').and.callThrough();
+
+    fixture.detectChanges();
+
+    expect(themeService.activateCmsTheme).toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('#cms-theme')).toBeTruthy();
+  });
+
+  it('updates the CMS theme from the theme selector', () => {
+    fixture.detectChanges();
+
+    const select = (fixture.nativeElement as HTMLElement).querySelector(
+      '#cms-theme'
+    ) as HTMLSelectElement;
+    select.value = 'dark';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(themeService.preference()).toBe('dark');
+    expect(document.documentElement.getAttribute('data-cms-theme')).toBe('dark');
   });
 });

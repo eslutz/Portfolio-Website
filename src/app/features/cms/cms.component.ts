@@ -10,6 +10,7 @@ import { Education } from '../education/education.interface';
 import { Home } from '../home/home.interface';
 import { PortfolioApiService } from '../../shared/services/portfolio-api.service';
 import { Project } from '../project/project.interface';
+import { ThemePreference, ThemeService } from '../../shared/services/theme.service';
 import { WorkRecognition } from '../work-recognition/work-recognition.interface';
 
 type CmsTab = 'home' | 'projects' | 'achievements' | 'media';
@@ -27,6 +28,7 @@ export class CmsComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly meta = inject(Meta);
   private readonly portfolioApi = inject(PortfolioApiService);
+  private readonly theme = inject(ThemeService);
 
   private previousRobotsContent: string | null = null;
   private selectedStandaloneMedia: File | null = null;
@@ -44,6 +46,8 @@ export class CmsComponent implements OnInit, OnDestroy {
   readonly status = signal<string | null>(null);
   readonly mediaUploadUrl = signal<string | null>(null);
   readonly principal = this.auth.principal;
+  readonly themeOptions = this.theme.options;
+  readonly themePreference = this.theme.preference;
 
   readonly homeForm = this.fb.nonNullable.group({
     id: [''],
@@ -69,6 +73,7 @@ export class CmsComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.theme.activateCmsTheme();
     this.previousRobotsContent =
       this.meta.getTag('name="robots"')?.content ?? null;
     this.meta.updateTag({
@@ -79,6 +84,7 @@ export class CmsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.theme.deactivateCmsTheme();
     if (this.previousRobotsContent) {
       this.meta.updateTag({
         name: 'robots',
@@ -358,6 +364,12 @@ export class CmsComponent implements OnInit, OnDestroy {
 
   signOut(): void {
     this.auth.signOut();
+  }
+
+  setThemePreference(event: Event): void {
+    const preference = (event.target as HTMLSelectElement)
+      .value as ThemePreference;
+    this.theme.setPreference(preference);
   }
 
   private loadContent(): void {

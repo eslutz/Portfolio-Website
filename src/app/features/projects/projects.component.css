@@ -6,7 +6,7 @@
   grid-template-columns: 300px 1fr;
   margin: 0 0 3rem 0;
   padding: 0 0 2rem 0;
-  border-bottom: 0.15rem solid #d6d6d6;
+  border-bottom: 0.15rem solid var(--color-border);
 }
 
 .project:last-child {
