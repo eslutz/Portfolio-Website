@@ -105,7 +105,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6.4.0
         with:
-          node-version: 22
+          node-version: '22.22.3'
           cache: npm
 
       - name: Install dependencies
@@ -139,6 +139,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: |
+          npm run build
+          cp staticwebapp.config.json dist/portfolio/browser/staticwebapp.config.json
 
       - name: Build and deploy
         uses: Azure/static-web-apps-deploy@v1
@@ -146,9 +162,10 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: /
+          app_location: dist/portfolio/browser
           api_location: api
-          output_location: dist/portfolio/browser
+          output_location: ''
+          skip_app_build: true
 
   # Builds and deploys the site to a pull request preview environment.
   deploy-preview:
@@ -159,6 +176,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: '22.22.3'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: |
+          npm run build
+          cp staticwebapp.config.json dist/portfolio/browser/staticwebapp.config.json
 
       - name: Build and deploy preview
         uses: Azure/static-web-apps-deploy@v1
@@ -166,9 +199,10 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: /
+          app_location: dist/portfolio/browser
           api_location: api
-          output_location: dist/portfolio/browser
+          output_location: ''
+          skip_app_build: true
 
   # Tears down the pull request preview environment after the PR is closed.
   close-preview:
