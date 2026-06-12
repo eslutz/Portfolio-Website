@@ -1,0 +1,51 @@
+:host ::ng-deep .home-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  letter-spacing: 0.1rem;
+  line-height: 1.5;
+}
+
+:host ::ng-deep .home-content :where(h2, h3, p, ul) {
+  margin: 0;
+}
+
+:host ::ng-deep .home-content h2 {
+  border-bottom: 0.2rem solid var(--color-border);
+  color: var(--color-heading);
+  font-size: 3.4rem;
+  font-weight: 250;
+  line-height: 1.2;
+  margin-top: 2.4rem;
+  padding-bottom: 0.6rem;
+}
+
+:host ::ng-deep .home-content h2:first-child {
+  margin-top: 0;
+}
+
+:host ::ng-deep .home-content h3 {
+  color: var(--color-heading);
+  font-size: 2.4rem;
+  font-weight: 500;
+  line-height: 1.25;
+  margin-top: 1.2rem;
+}
+
+:host ::ng-deep .home-content ul {
+  padding-left: 2.4rem;
+}
+
+:host ::ng-deep .home-content li + li {
+  margin-top: 0.6rem;
+}
+
+@media (max-width: 27.2em) {
+  :host ::ng-deep .home-content h2 {
+    font-size: 2.8rem;
+  }
+
+  :host ::ng-deep .home-content h3 {
+    font-size: 2.2rem;
+  }
+}
