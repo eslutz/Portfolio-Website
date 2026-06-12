@@ -1,7 +1,11 @@
-<app-navigation></app-navigation>
+@if (showSiteChrome()) {
+  <app-navigation></app-navigation>
+}
 
 <main>
   <router-outlet></router-outlet>
 </main>
 
-<app-footer></app-footer>
+@if (showSiteChrome()) {
+  <app-footer></app-footer>
+}

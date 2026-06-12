@@ -1,7 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Meta } from '@angular/platform-browser';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { forkJoin, of } from 'rxjs';
+import { Observable, forkJoin, of, retry, throwError, timer } from 'rxjs';
 
 import { Certification } from '../certifications/certification.interface';
 import { CmsApiService, CertificationInput, ProjectInput } from './cms-api.service';
@@ -379,11 +380,11 @@ export class CmsComponent implements OnInit, OnDestroy {
     this.clearMessages();
 
     forkJoin({
-      home: this.cmsApi.getComponent<Home>('home'),
-      projects: this.cmsApi.getComponent<Project>('project'),
-      education: this.cmsApi.getComponent<Education>('education'),
-      certifications: this.cmsApi.getComponent<Certification>('certification'),
-      recognition: this.cmsApi.getComponent<WorkRecognition>('recognition'),
+      home: this.loadComponent<Home>('home'),
+      projects: this.loadComponent<Project>('project'),
+      education: this.loadComponent<Education>('education'),
+      certifications: this.loadComponent<Certification>('certification'),
+      recognition: this.loadComponent<WorkRecognition>('recognition'),
     })
       .subscribe({
         next: (content) => {
@@ -399,6 +400,28 @@ export class CmsComponent implements OnInit, OnDestroy {
           this.showError('Failed to load CMS content.');
         },
       });
+  }
+
+  private loadComponent<T>(component: string): Observable<T[]> {
+    return this.cmsApi.getComponent<T>(component).pipe(
+      retry({
+        count: 2,
+        delay: (error, retryCount) => {
+          if (this.isTransientAuthError(error)) {
+            return timer(retryCount * 500);
+          }
+
+          return throwError(() => error);
+        },
+      })
+    );
+  }
+
+  private isTransientAuthError(error: unknown): boolean {
+    return (
+      error instanceof HttpErrorResponse &&
+      (error.status === 401 || error.status === 403)
+    );
   }
 
   private setHome(home: Home | undefined): void {

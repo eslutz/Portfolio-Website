@@ -2,7 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
-  DOCUMENT
+  DOCUMENT,
+  signal,
 } from '@angular/core';
 
 import { Title } from '@angular/platform-browser';
@@ -26,6 +27,8 @@ export class AppComponent {
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
 
+  readonly showSiteChrome = signal(true);
+
   constructor() {
     this.router.events
       .pipe(
@@ -39,6 +42,7 @@ export class AppComponent {
         if (routeTitle) {
           this.titleService.setTitle(`Eric Slutz | ${routeTitle}`);
         }
+        this.showSiteChrome.set(this.resolveSiteChrome());
         this.updateCanonicalLink(event.urlAfterRedirects);
         if (typeof gtag !== 'undefined') {
           gtag('config', 'G-9YBST1VWZJ', {
@@ -54,6 +58,14 @@ export class AppComponent {
       route = route.firstChild;
     }
     return route.snapshot.data['title'] ?? '';
+  }
+
+  private resolveSiteChrome(): boolean {
+    let route: ActivatedRoute = this.router.routerState.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route.snapshot.data['siteChrome'] !== false;
   }
 
   private updateCanonicalLink(url: string): void {

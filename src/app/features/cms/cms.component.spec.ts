@@ -1,6 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Meta } from '@angular/platform-browser';
-import { of } from 'rxjs';
+import { defer, of, throwError } from 'rxjs';
 
 import { CmsApiService } from './cms-api.service';
 import { CmsAuthService } from './cms-auth.service';
@@ -124,4 +125,71 @@ describe('CmsComponent', () => {
     expect(themeService.preference()).toBe('dark');
     expect(document.documentElement.getAttribute('data-cms-theme')).toBe('dark');
   });
+
+  it('retries transient CMS authorization failures while loading content', fakeAsync(() => {
+    const cmsApi = TestBed.inject(CmsApiService);
+    let homeAttempts = 0;
+    spyOn(cmsApi, 'getComponent').and.callFake(<T>(component: string) => {
+      if (component === 'home') {
+        return defer(() => {
+          homeAttempts += 1;
+          if (homeAttempts === 1) {
+            return throwError(
+              () => new HttpErrorResponse({ status: 403 })
+            );
+          }
+
+          return of([
+            {
+              id: 'home',
+              component: 'home',
+              title: 'Home after retry',
+              subtitle: 'Subtitle',
+              content: 'Content',
+            },
+          ] as T[]);
+        });
+      }
+
+      const content: Record<string, unknown[]> = {
+        project: [],
+        education: [
+          {
+            id: 'education',
+            component: 'education',
+            degrees: [],
+            honors: {
+              societies: { title: 'Society', description: 'Details' },
+              lists: { list: [], link: { title: 'Link', description: 'Details' } },
+            },
+          },
+        ],
+        certification: [],
+        recognition: [
+          {
+            id: 'recognition',
+            component: 'recognition',
+            companies: [
+              {
+                company: 'Company',
+                description: 'Company',
+                recognition: [{ type: RecognitionType.Text }],
+              },
+            ],
+          },
+        ],
+      };
+      return of((content[component] ?? []) as T[]);
+    });
+
+    fixture.detectChanges();
+    tick(1200);
+    fixture.detectChanges();
+
+    expect(homeAttempts).toBe(2);
+    expect(fixture.componentInstance.error()).toBeNull();
+    expect(fixture.componentInstance.homeForm.controls.title.value).toBe(
+      'Home after retry'
+    );
+  }));
 });

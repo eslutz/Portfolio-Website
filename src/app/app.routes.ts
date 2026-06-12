@@ -56,7 +56,7 @@ export const routes: Routes = [
     canActivate: [cmsAuthGuard],
     loadComponent: () =>
       import('./features/cms/cms.component').then((m) => m.CmsComponent),
-    data: { title: 'CMS' },
+    data: { title: 'CMS', siteChrome: false },
   },
   {
     path: '**',

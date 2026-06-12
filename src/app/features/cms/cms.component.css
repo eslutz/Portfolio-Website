@@ -2,24 +2,17 @@
   background: var(--cms-bg);
   color: var(--cms-ink);
   color-scheme: var(--cms-color-scheme);
+  line-height: 1.45;
   min-height: 100vh;
-  padding: 3.2rem;
+  padding: clamp(1.6rem, 4vw, 3.2rem);
 }
 
-.cms-header,
-.cms-tabs,
-.cms-panel,
-.cms-alert,
-.cms-loading {
+:is(.cms-header, .cms-tabs, .cms-panel, .cms-alert, .cms-loading) {
   margin: 0 auto;
   max-width: 118rem;
 }
 
-.cms-header,
-.panel-heading,
-.card-heading,
-.button-row,
-.cms-tabs {
+:is(.cms-header, .panel-heading, .card-heading, .button-row, .cms-tabs) {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -27,38 +20,53 @@
   justify-content: space-between;
 }
 
-.cms-tabs {
-  justify-content: flex-start;
-  padding-bottom: 2.4rem;
+.cms h1 {
+  color: var(--cms-ink);
+  font-family: var(--font-heading);
+  font-size: clamp(3.2rem, 6vw, 5.2rem);
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.05;
 }
 
-.cms-kicker,
-.cms-user {
+.cms p {
+  letter-spacing: 0;
+}
+
+.cms-tabs {
+  justify-content: flex-start;
+  overflow-x: auto;
+  padding-bottom: 2rem;
+  scrollbar-width: thin;
+}
+
+:is(.cms-kicker, .cms-user) {
   color: var(--cms-muted);
   font-size: 1.4rem;
 }
 
-.cms-tabs button,
-.primary-button,
-.secondary-button,
-.danger-button {
+.theme-control {
+  min-width: 0;
+}
+
+.cms button {
   border: 0;
   border-radius: 6px;
   cursor: pointer;
   font: inherit;
   font-size: 1.5rem;
   font-weight: 650;
+  line-height: 1.2;
   padding: 0.9rem 1.4rem;
+  white-space: nowrap;
 }
 
-.cms-tabs button,
-.secondary-button {
+:is(.cms-tabs button, .secondary-button) {
   background: var(--cms-control);
   color: var(--cms-control-ink);
 }
 
-.cms-tabs button.active,
-.primary-button {
+:is(.cms-tabs button.active, .primary-button) {
   background: #603aa1;
   color: #fff;
 }
@@ -68,9 +76,7 @@
   color: var(--cms-danger-ink);
 }
 
-.cms-panel,
-.editor-card,
-.nested-card {
+:is(.cms-panel, .editor-card, .nested-card) {
   background: var(--cms-surface);
   border: 1px solid var(--cms-border);
   border-radius: 8px;
@@ -97,18 +103,19 @@
   font-size: 1.4rem;
   font-weight: 650;
   gap: 0.8rem;
+  min-width: 0;
 }
 
-.cms input,
-.cms select,
-.cms textarea {
+.cms :is(input, select, textarea) {
   background: var(--cms-input);
   border: 1px solid var(--cms-border);
   border-radius: 6px;
   color: var(--cms-ink);
   font: inherit;
   font-size: 1.6rem;
+  max-width: 100%;
   min-height: 4.4rem;
+  min-width: 0;
   padding: 1rem 1.2rem;
   width: 100%;
 }
@@ -118,8 +125,7 @@
   resize: vertical;
 }
 
-.cms-alert,
-.cms-loading {
+:is(.cms-alert, .cms-loading) {
   border-radius: 6px;
   font-size: 1.5rem;
   font-weight: 600;
@@ -139,14 +145,43 @@
 
 @media (max-width: 760px) {
   .cms {
-    padding: 2rem;
+    padding: 1.6rem;
   }
 
-  .cms-header,
-  .panel-heading,
-  .card-heading {
+  :is(.cms-header, .panel-heading, .card-heading) {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .cms-header {
+    gap: 1.6rem;
+  }
+
+  .cms-header .button-row {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .panel-heading :is(.primary-button, .secondary-button) {
+    width: 100%;
+  }
+
+  .cms-header .secondary-button {
+    justify-self: start;
+  }
+
+  .cms-tabs {
+    flex-wrap: nowrap;
+    gap: 0.8rem;
+    margin-inline: -1.6rem;
+    padding: 0 1.6rem 1.6rem;
+  }
+
+  .cms button {
+    font-size: 1.4rem;
+    padding: 0.85rem 1.1rem;
   }
 
   .grid.two {
