@@ -7,8 +7,10 @@ describe('routes', () => {
     expect(route).toBeTruthy();
     expect(route?.data?.['title']).toBe('Space Adventure Text Game');
     expect(route?.data?.['gameId']).toBe('space-adventure');
-    expect(route?.data?.['quickCommands']).toContain('help');
-    expect(route?.data?.['quickCommands']).toContain('go Forward');
+    expect(route?.data?.['quickCommands']).toBeUndefined();
+    expect(route?.data?.['sourceRepoLink']).toContain(
+      'Space-Adventure-Text-Game'
+    );
   });
 
   it('registers the Guessing Game route with terminal route data', () => {
@@ -17,7 +19,7 @@ describe('routes', () => {
     expect(route).toBeTruthy();
     expect(route?.data?.['title']).toBe('Guessing Game');
     expect(route?.data?.['gameId']).toBe('guessing-game');
-    expect(route?.data?.['quickCommands']).toContain('1');
-    expect(route?.data?.['quickCommands']).toContain('quit');
+    expect(route?.data?.['quickCommands']).toBeUndefined();
+    expect(route?.data?.['sourceRepoLink']).toContain('Guessing-Game');
   });
 });

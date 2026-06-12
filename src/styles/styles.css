@@ -208,12 +208,12 @@ p {
 }
 
 .heading-secondary {
-  font-size: 4.2rem;
-  font-weight: 200;
+  border-bottom: 0.2rem solid var(--color-accent);
+  font-size: 3.4rem;
+  font-weight: 650;
   line-height: 1.2;
-  padding: 0 0 0.4rem 0;
-  margin: 0 0 1.8rem 0;
-  border-bottom: 0.25rem solid;
+  margin: 0 0 2.4rem 0;
+  padding: 0 0 0.8rem 0;
 }
 
 .heading-tertiary {
@@ -458,7 +458,7 @@ p {
   }
 
   .heading-secondary {
-    font-size: 3.4rem;
+    font-size: 3rem;
   }
 
   .heading-tertiary {

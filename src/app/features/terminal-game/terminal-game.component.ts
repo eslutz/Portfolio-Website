@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { PythonGameRuntimeService } from '../../shared/services/python-game-runtime.service';
 
@@ -15,7 +15,6 @@ interface TerminalGameRouteData {
   title: string;
   description: string;
   gameId: string;
-  quickCommands: string[];
   sourceRepoLink: string;
 }
 
@@ -23,7 +22,7 @@ interface TerminalGameRouteData {
   selector: 'app-terminal-game',
   templateUrl: './terminal-game.component.html',
   styleUrls: ['./terminal-game.component.css'],
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TerminalGameComponent {
@@ -62,10 +61,6 @@ export class TerminalGameComponent {
 
     this.runtime.submit(value);
     this.command.setValue('');
-  }
-
-  submitQuickCommand(command: string): void {
-    this.runtime.submit(command);
   }
 
   restart(): void {

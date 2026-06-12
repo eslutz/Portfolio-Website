@@ -2,13 +2,23 @@
   <div class="container terminal-container">
     <div class="game-header">
       <div>
+        <a class="link back-link" routerLink="/projects">
+          <i class="fa-solid fa-arrow-left"></i>
+          Back to Projects
+        </a>
         <h1 class="heading-secondary">{{ game.title }}</h1>
         <p>{{ game.description }}</p>
       </div>
-      <a class="link source-link" [href]="game.sourceRepoLink" target="_blank" rel="noopener noreferrer">
-        Code
-        <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
-      </a>
+      <div class="game-actions">
+        <a
+          class="link source-link"
+          [href]="game.sourceRepoLink"
+          target="_blank"
+          rel="noopener noreferrer">
+          Code
+          <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
+        </a>
+      </div>
     </div>
 
     <div class="terminal-shell" aria-live="polite">
@@ -37,21 +47,12 @@
         }
       </div>
 
-      <div class="quick-commands" aria-label="Quick commands">
-        @for (quickCommand of game.quickCommands; track quickCommand) {
-          <button
-            type="button"
-            class="terminal-button"
-            [attr.data-command]="quickCommand"
-            [disabled]="!runtime.ready()"
-            (click)="submitQuickCommand(quickCommand)">
-            {{ quickCommand }}
-          </button>
-        }
-      </div>
-
-      <form class="terminal-input-row" (submit)="submitCommand(); $event.preventDefault()">
-        <label class="terminal-prompt" for="terminal-command">{{ runtime.prompt() }}</label>
+      <form
+        class="terminal-input-row"
+        (submit)="submitCommand(); $event.preventDefault()">
+        <label class="terminal-prompt" for="terminal-command">
+          {{ runtime.prompt() }}
+        </label>
         <input
           id="terminal-command"
           name="command"
@@ -59,7 +60,10 @@
           autocomplete="off"
           [formControl]="command"
           [attr.aria-label]="runtime.prompt() || 'Game command'" />
-        <button type="submit" class="terminal-button" [disabled]="!runtime.ready()">
+        <button
+          type="submit"
+          class="terminal-button"
+          [disabled]="!runtime.ready()">
           Send
         </button>
       </form>

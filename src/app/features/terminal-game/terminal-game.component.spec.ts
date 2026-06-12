@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 
 import { TerminalGameComponent } from './terminal-game.component';
 import { PythonGameRuntimeService } from '../../shared/services/python-game-runtime.service';
@@ -28,6 +28,7 @@ describe('TerminalGameComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TerminalGameComponent],
       providers: [
+        provideRouter([]),
         { provide: PythonGameRuntimeService, useValue: runtime },
         {
           provide: ActivatedRoute,
@@ -37,7 +38,6 @@ describe('TerminalGameComponent', () => {
                 title: 'Space Adventure Text Game',
                 description: 'A small text-based game set on your ship.',
                 gameId: 'space-adventure',
-                quickCommands: ['help', 'go Forward'],
                 sourceRepoLink:
                   'https://github.com/eslutz/Space-Adventure-Text-Game',
               },
@@ -64,6 +64,9 @@ describe('TerminalGameComponent', () => {
     expect(element.querySelector('.terminal-prompt')?.textContent).toContain(
       'Enter your move =>'
     );
+    expect(element.querySelector('a[href="/projects"]')?.textContent).toContain(
+      'Back to Projects'
+    );
   });
 
   it('submits typed commands and clears the input', () => {
@@ -80,19 +83,15 @@ describe('TerminalGameComponent', () => {
     expect(input!.value).toBe('');
   });
 
-  it('submits quick commands and restarts the game', () => {
+  it('removes quick commands and restarts the game', () => {
     const element = fixture.nativeElement as HTMLElement;
-    const quickCommand = element.querySelector<HTMLButtonElement>(
-      'button[data-command="go Forward"]'
-    );
     const restart = element.querySelector<HTMLButtonElement>(
       'button[data-testid="restart-game"]'
     );
 
-    quickCommand!.click();
     restart!.click();
 
-    expect(runtime.submit).toHaveBeenCalledWith('go Forward');
+    expect(element.querySelector('button[data-command]')).toBeNull();
     expect(runtime.reset).toHaveBeenCalled();
   });
 

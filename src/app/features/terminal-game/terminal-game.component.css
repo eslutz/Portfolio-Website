@@ -11,8 +11,14 @@
   justify-content: space-between;
 }
 
-.source-link {
+.back-link {
+  margin-bottom: 1.8rem;
+}
+
+.game-actions {
+  display: flex;
   flex: 0 0 auto;
+  justify-content: flex-end;
   margin-top: 1rem;
 }
 
@@ -25,8 +31,7 @@
 }
 
 .terminal-toolbar,
-.terminal-input-row,
-.quick-commands {
+.terminal-input-row {
   align-items: center;
   display: flex;
   gap: 1rem;
@@ -67,13 +72,8 @@
   color: #ffb1c0;
 }
 
-.quick-commands {
-  border-top: 0.1rem solid #343b48;
-  flex-wrap: wrap;
-  padding: 1.2rem 1.6rem 0;
-}
-
 .terminal-input-row {
+  border-top: 0.1rem solid #343b48;
   padding: 1.2rem 1.6rem 1.6rem;
 }
 
@@ -122,5 +122,10 @@
 
   .terminal-output {
     min-height: 34rem;
+  }
+
+  .game-actions {
+    justify-content: flex-start;
+    margin-top: 0;
   }
 }
