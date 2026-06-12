@@ -20,6 +20,7 @@ public class StaticWebAppsClientPrincipal
 public class HomeInput
 {
   public string? Title { get; set; }
+  public string? Subtitle { get; set; }
   public string? Content { get; set; }
 }
 

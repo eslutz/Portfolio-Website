@@ -32,6 +32,11 @@ public class HtmlContentSanitizer
 
   public Home Sanitize(Home home)
   {
+    if (!string.IsNullOrWhiteSpace(home.Subtitle))
+    {
+      home.Subtitle = Sanitize(home.Subtitle);
+    }
+
     home.Content = Sanitize(home.Content);
     return home;
   }

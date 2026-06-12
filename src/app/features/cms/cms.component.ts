@@ -52,6 +52,7 @@ export class CmsComponent implements OnInit, OnDestroy {
   readonly homeForm = this.fb.nonNullable.group({
     id: [''],
     title: ['', Validators.required],
+    subtitle: [''],
     content: ['', Validators.required],
   });
 
@@ -117,11 +118,12 @@ export class CmsComponent implements OnInit, OnDestroy {
     this.cmsApi
       .updateHome(id, {
         title: this.homeForm.controls.title.value,
+        subtitle: this.homeForm.controls.subtitle.value,
         content: this.homeForm.controls.content.value,
       })
       .subscribe({
         next: (home) => {
-          this.homeForm.patchValue(home);
+          this.patchHomeForm(home);
           this.portfolioApi.clearCache('home');
           this.showStatus('Home content saved.');
         },
@@ -404,7 +406,14 @@ export class CmsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.homeForm.patchValue(home);
+    this.patchHomeForm(home);
+  }
+
+  private patchHomeForm(home: Home): void {
+    this.homeForm.patchValue({
+      ...home,
+      subtitle: home.subtitle ?? '',
+    });
   }
 
   private setProjects(projects: Project[]): void {

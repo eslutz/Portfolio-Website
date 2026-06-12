@@ -78,6 +78,7 @@ public class CmsContentFunctions
       Id = id,
       Component = Component.Home.ToString().ToLowerInvariant(),
       Title = input.Title!.Trim(),
+      Subtitle = IsBlank(input.Subtitle) ? null : input.Subtitle!.Trim(),
       Content = input.Content!,
     });
 

@@ -45,7 +45,10 @@ export class CmsApiService {
     return this.http.get<T[]>(`${this.apiUrl}/components/${component}`);
   }
 
-  updateHome(id: string, payload: Pick<Home, 'title' | 'content'>): Observable<Home> {
+  updateHome(
+    id: string,
+    payload: Pick<Home, 'title' | 'subtitle' | 'content'>
+  ): Observable<Home> {
     return this.http.put<Home>(`${this.apiUrl}/home/${id}`, payload);
   }
 

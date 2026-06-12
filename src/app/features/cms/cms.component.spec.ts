@@ -47,6 +47,7 @@ describe('CmsComponent', () => {
                     id: 'home',
                     component: 'home',
                     title: 'Home',
+                    subtitle: 'Subtitle',
                     content: 'Content',
                   },
                 ],

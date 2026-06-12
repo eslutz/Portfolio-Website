@@ -5,9 +5,12 @@
   <p class="container loading-error" role="alert">{{ state().error }}</p>
 } @else {
   @if (state().home; as home) {
-    <header class="light-bg">
-      <div class="heading-container">
-        <h1 class="heading-primary">{{ home.title }}</h1>
+    <header class="home-hero light-bg">
+      <div class="home-hero__inner">
+        <h1 class="heading-primary home-title">{{ home.title }}</h1>
+        @if (home.subtitle) {
+          <p class="home-subtitle">{{ home.subtitle }}</p>
+        }
       </div>
     </header>
     <section class="about" id="about">

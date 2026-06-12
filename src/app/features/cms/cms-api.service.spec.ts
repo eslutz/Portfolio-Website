@@ -61,6 +61,31 @@ describe('CmsApiService', () => {
     });
   });
 
+  it('updates home records with title, subtitle, and content', () => {
+    service
+      .updateHome('home-1', {
+        title: 'Eric Slutz',
+        subtitle: 'Software Engineer',
+        content: '<h2>Current Focus</h2>',
+      })
+      .subscribe();
+
+    const req = httpMock.expectOne('/api/cms/home/home-1');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({
+      title: 'Eric Slutz',
+      subtitle: 'Software Engineer',
+      content: '<h2>Current Focus</h2>',
+    });
+    req.flush({
+      id: 'home-1',
+      component: 'home',
+      title: 'Eric Slutz',
+      subtitle: 'Software Engineer',
+      content: '<h2>Current Focus</h2>',
+    });
+  });
+
   it('uploads media as multipart form data', () => {
     const file = new File(['image'], 'image.png', { type: 'image/png' });
 

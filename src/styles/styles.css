@@ -14,10 +14,23 @@
     url('../assets/fonts/Mona-Sans.woff2') format('woff2-variations');
   font-weight: 200 900;
   font-stretch: 75% 125%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hubot Sans';
+  src: url('../assets/fonts/Hubot-Sans.woff2')
+      format('woff2 supports variations'),
+    url('../assets/fonts/Hubot-Sans.woff2') format('woff2-variations');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-display: swap;
 }
 
 :root {
   color-scheme: light;
+  --font-body: 'Mona Sans', Arial, sans-serif;
+  --font-heading: 'Hubot Sans', 'Mona Sans', Arial, sans-serif;
   --color-page: #fff;
   --color-surface: #eee;
   --color-surface-shadow: #eee;
@@ -117,7 +130,7 @@ html[data-cms-theme='dark'] {
 }
 
 html {
-  font-family: 'Mona Sans';
+  font-family: var(--font-body);
   scroll-behavior: smooth;
   font-size: 62.5%;
   scroll-padding-top: 70px;
@@ -182,6 +195,7 @@ p {
 .heading-secondary,
 .heading-tertiary {
   color: var(--color-heading);
+  font-family: var(--font-heading);
   letter-spacing: 0;
 }
 
