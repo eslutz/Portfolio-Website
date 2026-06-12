@@ -1,0 +1,155 @@
+.cms {
+  background: var(--cms-bg);
+  color: var(--cms-ink);
+  color-scheme: var(--cms-color-scheme);
+  min-height: 100vh;
+  padding: 3.2rem;
+}
+
+.cms-header,
+.cms-tabs,
+.cms-panel,
+.cms-alert,
+.cms-loading {
+  margin: 0 auto;
+  max-width: 118rem;
+}
+
+.cms-header,
+.panel-heading,
+.card-heading,
+.button-row,
+.cms-tabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: space-between;
+}
+
+.cms-tabs {
+  justify-content: flex-start;
+  padding-bottom: 2.4rem;
+}
+
+.cms-kicker,
+.cms-user {
+  color: var(--cms-muted);
+  font-size: 1.4rem;
+}
+
+.cms-tabs button,
+.primary-button,
+.secondary-button,
+.danger-button {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 650;
+  padding: 0.9rem 1.4rem;
+}
+
+.cms-tabs button,
+.secondary-button {
+  background: var(--cms-control);
+  color: var(--cms-control-ink);
+}
+
+.cms-tabs button.active,
+.primary-button {
+  background: #603aa1;
+  color: #fff;
+}
+
+.danger-button {
+  background: var(--cms-danger-bg);
+  color: var(--cms-danger-ink);
+}
+
+.cms-panel,
+.editor-card,
+.nested-card {
+  background: var(--cms-surface);
+  border: 1px solid var(--cms-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  min-width: 0;
+  padding: 2rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cms label {
+  color: var(--cms-label);
+  display: flex;
+  flex-direction: column;
+  font-size: 1.4rem;
+  font-weight: 650;
+  gap: 0.8rem;
+}
+
+.cms input,
+.cms select,
+.cms textarea {
+  background: var(--cms-input);
+  border: 1px solid var(--cms-border);
+  border-radius: 6px;
+  color: var(--cms-ink);
+  font: inherit;
+  font-size: 1.6rem;
+  min-height: 4.4rem;
+  padding: 1rem 1.2rem;
+  width: 100%;
+}
+
+.cms textarea {
+  font-family: monospace;
+  resize: vertical;
+}
+
+.cms-alert,
+.cms-loading {
+  border-radius: 6px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.6rem;
+  padding: 1.2rem 1.4rem;
+}
+
+.cms-alert.error {
+  background: var(--cms-error-bg);
+  color: var(--cms-error-ink);
+}
+
+.cms-alert.success {
+  background: var(--cms-success-bg);
+  color: var(--cms-success-ink);
+}
+
+@media (max-width: 760px) {
+  .cms {
+    padding: 2rem;
+  }
+
+  .cms-header,
+  .panel-heading,
+  .card-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,12 +8,17 @@ import { PortfolioApiService } from '../../shared/services/portfolio-api.service
 interface HomeState {
   loading: boolean;
   error: string | null;
-  home: Home | null;
+  home: HomeViewModel | null;
+}
+
+interface HomeViewModel extends Home {
+  subtitle: string | null;
 }
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
@@ -29,7 +34,7 @@ export class HomeComponent {
             home: null,
           };
         }
-        return { loading: false, error: null, home };
+        return { loading: false, error: null, home: this.toViewModel(home) };
       }),
       catchError(() =>
         of<HomeState>({
@@ -41,4 +46,38 @@ export class HomeComponent {
     ),
     { initialValue: { loading: true, error: null, home: null } }
   );
+
+  private toViewModel(home: Home): HomeViewModel {
+    const subtitle = home.subtitle?.trim() || null;
+    return {
+      ...home,
+      subtitle,
+      content: subtitle
+        ? this.removeDuplicateLeadParagraph(home.content, subtitle)
+        : home.content,
+    };
+  }
+
+  private removeDuplicateLeadParagraph(content: string, subtitle: string): string {
+    const escapedSubtitle = this.escapeRegExp(subtitle);
+    const patterns = [
+      new RegExp(`^\\s*<p>\\s*${escapedSubtitle}\\s*</p>\\s*`, 'i'),
+      new RegExp(
+        `^\\s*${escapedSubtitle}\\s*(?:<br\\s*/?>\\s*){2}`,
+        'i'
+      ),
+    ];
+
+    for (const pattern of patterns) {
+      if (pattern.test(content)) {
+        return content.replace(pattern, '').trim();
+      }
+    }
+
+    return content;
+  }
+
+  private escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 }

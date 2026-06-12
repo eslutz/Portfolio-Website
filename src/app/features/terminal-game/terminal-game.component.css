@@ -1,0 +1,126 @@
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+
+.game-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
+.source-link {
+  flex: 0 0 auto;
+  margin-top: 1rem;
+}
+
+.terminal-shell {
+  background: #111318;
+  border: 0.1rem solid var(--color-border);
+  border-radius: 5px;
+  color: #eef2f7;
+  overflow: hidden;
+}
+
+.terminal-toolbar,
+.terminal-input-row,
+.quick-commands {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+}
+
+.terminal-toolbar {
+  background: #20242d;
+  border-bottom: 0.1rem solid #343b48;
+  justify-content: space-between;
+  padding: 1.2rem 1.6rem;
+}
+
+.terminal-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.terminal-output {
+  min-height: 42rem;
+  max-height: 58rem;
+  overflow: auto;
+  padding: 1.6rem;
+}
+
+.terminal-output pre {
+  color: inherit;
+  font: 1.5rem/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  margin: 0 0 1.2rem;
+  white-space: pre-wrap;
+}
+
+.terminal-status,
+.terminal-error {
+  margin: 1.6rem 1.6rem 0;
+}
+
+.terminal-error {
+  color: #ffb1c0;
+}
+
+.quick-commands {
+  border-top: 0.1rem solid #343b48;
+  flex-wrap: wrap;
+  padding: 1.2rem 1.6rem 0;
+}
+
+.terminal-input-row {
+  padding: 1.2rem 1.6rem 1.6rem;
+}
+
+.terminal-prompt {
+  color: #8ee0b2;
+  flex: 0 0 auto;
+  font: 1.5rem/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.terminal-input-row input {
+  background: #151820;
+  border: 0.1rem solid #343b48;
+  border-radius: 5px;
+  color: #eef2f7;
+  flex: 1 1 auto;
+  font: 1.5rem/1.3 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  min-width: 12rem;
+  padding: 0.9rem 1rem;
+}
+
+.terminal-button {
+  background: #2a303b;
+  border: 0.1rem solid #485263;
+  border-radius: 5px;
+  color: #eef2f7;
+  cursor: pointer;
+  font: 600 1.4rem/1 'Mona Sans', sans-serif;
+  padding: 0.8rem 1rem;
+}
+
+.terminal-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.terminal-button:not(:disabled):hover {
+  border-color: #8ee0b2;
+}
+
+@media (max-width: 44em) {
+  .game-header,
+  .terminal-input-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .terminal-output {
+    min-height: 34rem;
+  }
+}

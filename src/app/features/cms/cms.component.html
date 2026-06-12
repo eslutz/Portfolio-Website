@@ -1,0 +1,261 @@
+<section class="cms">
+  <header class="cms-header">
+    <div>
+      <p class="cms-kicker">Portfolio CMS</p>
+      <h1>Content Manager</h1>
+      @if (principal(); as user) {
+        <p class="cms-user">Signed in as {{ user.userDetails }}</p>
+      }
+    </div>
+    <div class="button-row">
+      <label class="theme-control" for="cms-theme">
+        Theme
+        <select
+          id="cms-theme"
+          [value]="themePreference()"
+          (change)="setThemePreference($event)">
+          @for (option of themeOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="secondary-button" (click)="signOut()">
+        Sign out
+      </button>
+    </div>
+  </header>
+
+  <nav class="cms-tabs" aria-label="CMS sections">
+    @for (tab of tabs; track tab.id) {
+      <button
+        type="button"
+        [class.active]="activeTab() === tab.id"
+        (click)="setActiveTab(tab.id)">
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  @if (error()) {
+    <p class="cms-alert error" role="alert">{{ error() }}</p>
+  }
+  @if (status()) {
+    <p class="cms-alert success" role="status">{{ status() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="cms-loading" role="status" aria-live="polite">Loading CMS</p>
+  } @else {
+    @if (activeTab() === 'home') {
+      <form class="cms-panel" [formGroup]="homeForm" (ngSubmit)="saveHome()">
+        <div class="panel-heading">
+          <h2>Home</h2>
+          <button type="submit" class="primary-button">Save home</button>
+        </div>
+        <label>
+          Title
+          <input type="text" formControlName="title" />
+        </label>
+        <label>
+          Hero subtitle
+          <input type="text" formControlName="subtitle" />
+        </label>
+        <label>
+          Homepage content
+          <textarea rows="12" formControlName="content"></textarea>
+        </label>
+      </form>
+    }
+
+    @if (activeTab() === 'projects') {
+      <form class="cms-panel" (ngSubmit)="saveProjects()">
+        <div class="panel-heading">
+          <h2>Projects</h2>
+          <div class="button-row">
+            <button type="button" class="secondary-button" (click)="addProject()">
+              Add project
+            </button>
+            <button type="submit" class="primary-button">Save projects</button>
+          </div>
+        </div>
+
+        @for (projectControl of projectsArray.controls; track trackControl($index); let i = $index) {
+          <fieldset class="editor-card" [formGroup]="asGroup(projectControl)">
+            <div class="card-heading">
+              <legend>Project {{ i + 1 }}</legend>
+              <button type="button" class="danger-button" (click)="deleteProject(i)">
+                Delete
+              </button>
+            </div>
+            <div class="grid two">
+              <label>
+                Order
+                <input type="number" formControlName="order" />
+              </label>
+              <label>
+                Title
+                <input type="text" formControlName="title" />
+              </label>
+            </div>
+            <label>
+              Description
+              <textarea rows="6" formControlName="description"></textarea>
+            </label>
+            <div class="grid two">
+              <label>
+                Image URL
+                <input type="url" formControlName="imageSrc" />
+              </label>
+              <label>
+                Upload image
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  (change)="uploadProjectMedia($event, projectControl, 'imageSrc')" />
+              </label>
+              <label>
+                Video URL
+                <input type="url" formControlName="videoSrc" />
+              </label>
+              <label>
+                Upload video
+                <input
+                  type="file"
+                  accept="video/mp4"
+                  (change)="uploadProjectMedia($event, projectControl, 'videoSrc')" />
+              </label>
+              <label>
+                Demo link
+                <input type="url" formControlName="demoLink" />
+              </label>
+              <label>
+                Demo link text
+                <input type="text" formControlName="demoLinkText" />
+              </label>
+            </div>
+            <label>
+              Code link
+              <input type="url" formControlName="codeLink" />
+            </label>
+          </fieldset>
+        }
+      </form>
+    }
+
+    @if (activeTab() === 'achievements') {
+      <section class="cms-panel">
+        <div class="panel-heading">
+          <h2>Achievements</h2>
+        </div>
+
+        <form class="editor-card" [formGroup]="educationForm" (ngSubmit)="saveEducation()">
+          <div class="card-heading">
+            <h3>Education</h3>
+            <button type="submit" class="primary-button">Save education</button>
+          </div>
+          <label>
+            Education JSON
+            <textarea rows="16" formControlName="json"></textarea>
+          </label>
+        </form>
+
+        <form class="editor-card" (ngSubmit)="saveCertifications()">
+          <div class="card-heading">
+            <h3>Certifications</h3>
+            <div class="button-row">
+              <button
+                type="button"
+                class="secondary-button"
+                (click)="addCertification()">
+                Add certification
+              </button>
+              <button type="submit" class="primary-button">
+                Save certifications
+              </button>
+            </div>
+          </div>
+
+          @for (certificationControl of certificationsArray.controls; track trackControl($index); let i = $index) {
+            <fieldset class="nested-card" [formGroup]="asGroup(certificationControl)">
+              <div class="card-heading">
+                <legend>Certification {{ i + 1 }}</legend>
+                <button
+                  type="button"
+                  class="danger-button"
+                  (click)="deleteCertification(i)">
+                  Delete
+                </button>
+              </div>
+              <div class="grid two">
+                <label>
+                  Title
+                  <input type="text" formControlName="title" />
+                </label>
+                <label>
+                  Earned
+                  <input type="date" formControlName="earned" />
+                </label>
+                <label>
+                  Link
+                  <input type="url" formControlName="link" />
+                </label>
+                <label>
+                  Expires
+                  <input type="date" formControlName="expires" />
+                </label>
+              </div>
+              <label>
+                Description
+                <textarea rows="4" formControlName="description"></textarea>
+              </label>
+            </fieldset>
+          }
+        </form>
+
+        <form class="editor-card" [formGroup]="recognitionForm" (ngSubmit)="saveRecognition()">
+          <div class="card-heading">
+            <h3>Work Recognition</h3>
+            <button type="submit" class="primary-button">
+              Save recognition
+            </button>
+          </div>
+          <label>
+            Work recognition JSON
+            <textarea rows="18" formControlName="json"></textarea>
+          </label>
+        </form>
+      </section>
+    }
+
+    @if (activeTab() === 'media') {
+      <form class="cms-panel" [formGroup]="mediaForm" (ngSubmit)="uploadStandaloneMedia()">
+        <div class="panel-heading">
+          <h2>Media</h2>
+          <button type="submit" class="primary-button">Upload media</button>
+        </div>
+        <div class="grid two">
+          <label>
+            Category
+            <select formControlName="category">
+              <option value="projects">Projects</option>
+              <option value="recognition">Recognition</option>
+            </select>
+          </label>
+          <label>
+            File
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif,video/mp4"
+              (change)="setStandaloneMedia($event)" />
+          </label>
+        </div>
+        @if (mediaUploadUrl()) {
+          <label>
+            Uploaded URL
+            <input type="url" [value]="mediaUploadUrl()" readonly />
+          </label>
+        }
+      </form>
+    }
+  }
+</section>

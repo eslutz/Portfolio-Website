@@ -1,0 +1,113 @@
+:host {
+  display: block;
+}
+
+.home-hero__inner {
+  margin: 0 auto;
+  max-width: 120rem;
+  padding: 7.2rem 3.2rem 7.6rem;
+}
+
+.home-title {
+  color: var(--color-heading);
+  font-size: 5.6rem;
+  font-weight: 650;
+  line-height: 1.05;
+  max-width: 90rem;
+  padding: 0;
+}
+
+.home-subtitle {
+  color: var(--color-text);
+  font-size: 2.4rem;
+  font-weight: 350;
+  letter-spacing: 0;
+  line-height: 1.35;
+  margin-top: 1.6rem;
+  max-width: 88rem;
+}
+
+:host ::ng-deep .home-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  letter-spacing: 0.1rem;
+  line-height: 1.5;
+}
+
+:host ::ng-deep .home-content :where(h2, h3, p, ul) {
+  margin: 0;
+}
+
+:host ::ng-deep .home-content h2 {
+  border-bottom: 0.2rem solid var(--color-accent);
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-size: 3.4rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin-top: 3.2rem;
+  padding-bottom: 0.8rem;
+}
+
+:host ::ng-deep .home-content h2:first-child {
+  margin-top: 0;
+}
+
+:host ::ng-deep .home-content h3 {
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.25;
+  margin-top: 1.4rem;
+}
+
+:host ::ng-deep .home-content ul {
+  display: grid;
+  gap: 0.7rem;
+  padding-left: 2.4rem;
+}
+
+:host ::ng-deep .home-content li + li {
+  margin-top: 0;
+}
+
+@media (max-width: 44em) {
+  .home-hero__inner {
+    padding-bottom: 5.6rem;
+    padding-top: 5.6rem;
+  }
+
+  .home-title {
+    font-size: 4.4rem;
+  }
+
+  .home-subtitle {
+    font-size: 2.1rem;
+  }
+}
+
+@media (max-width: 27.2em) {
+  .home-hero__inner {
+    padding: 4.8rem 3.2rem;
+  }
+
+  .home-title {
+    font-size: 3.8rem;
+  }
+
+  .home-subtitle {
+    font-size: 1.9rem;
+  }
+
+  :host ::ng-deep .home-content h2 {
+    font-size: 3rem;
+  }
+
+  :host ::ng-deep .home-content h3 {
+    font-size: 2.3rem;
+  }
+}

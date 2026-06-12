@@ -35,7 +35,21 @@
                 "input": "src/assets",
                 "output": "assets",
                 "ignore": [
-                  "**/.DS_Store"
+                  "**/.DS_Store",
+                  "**/__pycache__/**",
+                  "**/*.pyc"
+                ]
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/pyodide",
+                "output": "assets/pyodide",
+                "ignore": [
+                  "**/*.d.ts",
+                  "**/*.html",
+                  "**/*.map",
+                  "README.md",
+                  "package.json"
                 ]
               }
             ],
@@ -115,7 +129,21 @@
                 "input": "src/assets",
                 "output": "assets",
                 "ignore": [
-                  "**/.DS_Store"
+                  "**/.DS_Store",
+                  "**/__pycache__/**",
+                  "**/*.pyc"
+                ]
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/pyodide",
+                "output": "assets/pyodide",
+                "ignore": [
+                  "**/*.d.ts",
+                  "**/*.html",
+                  "**/*.map",
+                  "README.md",
+                  "package.json"
                 ]
               }
             ],

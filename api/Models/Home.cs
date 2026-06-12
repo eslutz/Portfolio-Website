@@ -13,6 +13,9 @@ public class Home
   [JsonPropertyName("title")]
   public required string Title { get; set; }
 
+  [JsonPropertyName("subtitle")]
+  public string? Subtitle { get; set; }
+
   [JsonPropertyName("content")]
   public required string Content { get; set; }
 }

@@ -1,0 +1,68 @@
+<section class="terminal-game">
+  <div class="container terminal-container">
+    <div class="game-header">
+      <div>
+        <h1 class="heading-secondary">{{ game.title }}</h1>
+        <p>{{ game.description }}</p>
+      </div>
+      <a class="link source-link" [href]="game.sourceRepoLink" target="_blank" rel="noopener noreferrer">
+        Code
+        <i class="fa-solid fa-arrow-up-right-from-square left-padding--xs"></i>
+      </a>
+    </div>
+
+    <div class="terminal-shell" aria-live="polite">
+      <div class="terminal-toolbar">
+        <span class="terminal-title">{{ game.title }}</span>
+        <button
+          type="button"
+          class="terminal-button"
+          data-testid="restart-game"
+          (click)="restart()">
+          Restart
+        </button>
+      </div>
+
+      @if (runtime.loading()) {
+        <p class="terminal-status" role="status">Loading Python runtime</p>
+      }
+
+      @if (runtime.error()) {
+        <p class="terminal-error" role="alert">{{ runtime.error() }}</p>
+      }
+
+      <div class="terminal-output" tabindex="0">
+        @for (entry of runtime.output(); track $index) {
+          <pre>{{ entry }}</pre>
+        }
+      </div>
+
+      <div class="quick-commands" aria-label="Quick commands">
+        @for (quickCommand of game.quickCommands; track quickCommand) {
+          <button
+            type="button"
+            class="terminal-button"
+            [attr.data-command]="quickCommand"
+            [disabled]="!runtime.ready()"
+            (click)="submitQuickCommand(quickCommand)">
+            {{ quickCommand }}
+          </button>
+        }
+      </div>
+
+      <form class="terminal-input-row" (submit)="submitCommand(); $event.preventDefault()">
+        <label class="terminal-prompt" for="terminal-command">{{ runtime.prompt() }}</label>
+        <input
+          id="terminal-command"
+          name="command"
+          type="text"
+          autocomplete="off"
+          [formControl]="command"
+          [attr.aria-label]="runtime.prompt() || 'Game command'" />
+        <button type="submit" class="terminal-button" [disabled]="!runtime.ready()">
+          Send
+        </button>
+      </form>
+    </div>
+  </div>
+</section>

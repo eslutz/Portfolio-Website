@@ -1,34 +1,20 @@
-/**************/
-/* NAVIGATION */
-/**************/
 :host {
   display: block;
-  position: -webkit-sticky;
   position: sticky;
   top: 0;
   z-index: 999;
 }
 
 .nav {
-  background-color: #eee;
-  -webkit-box-shadow: 0 5px 5px #eee;
-  box-shadow: 0 5px 5px #eee;
+  background-color: var(--color-surface);
+  box-shadow: 0 5px 5px var(--color-surface-shadow);
 }
 
 .nav-container {
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   gap: 5rem;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
   flex-direction: row;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
   padding: 0 4.8rem;
   position: relative;
@@ -42,17 +28,11 @@
 }
 
 .main-nav-list {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   gap: 3.2rem;
   list-style: none;
   margin: 3.2rem 0;
 }
-
-/*********************/
-/* MOBILE NAVIGATION */
-/*********************/
 
 .btn-mobile-nav {
   border: none;
@@ -63,7 +43,7 @@
 }
 
 .icon-mobile-nav {
-  color: #767676;
+  color: var(--color-heading);
   font-size: 4.8rem;
 }
 
@@ -71,9 +51,6 @@
   display: none;
 }
 
-/****************/
-/* BELOW 1088px */
-/****************/
 @media (max-width: 68em) {
   .btn-mobile-nav {
     display: block;
@@ -81,28 +58,17 @@
   }
 
   .main-nav {
-    -webkit-box-align: center;
-    -ms-flex-align: center;
     align-items: center;
-    background-color: rgba(238, 238, 238, 0.96);
-    -webkit-box-shadow: 0 5px 5px rgba(238, 238, 238, 0.96);
-    box-shadow: 0 5px 5px rgba(238, 238, 238, 0.96);
-    display: -webkit-box;
-    display: -ms-flexbox;
+    background-color: var(--color-nav-overlay);
+    box-shadow: 0 5px 5px var(--color-nav-overlay);
     display: flex;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
     justify-content: center;
     pointer-events: none;
     position: absolute;
     left: 0;
     top: 0;
     opacity: 0;
-    -webkit-transform: translateY(0);
-    -ms-transform: translateY(0);
     transform: translateY(0);
-    -webkit-transition: all 0.5s ease-in;
-    -o-transition: all 0.5s ease-in;
     transition: all 0.5s ease-in;
     visibility: hidden;
     width: 100%;
@@ -111,8 +77,6 @@
   .nav-open .main-nav {
     opacity: 1;
     pointer-events: auto;
-    -webkit-transform: translateY(1rem);
-    -ms-transform: translateY(1rem);
     transform: translateY(1rem);
     visibility: visible;
   }
@@ -126,9 +90,6 @@
   }
 
   .main-nav-list {
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
     flex-direction: column;
     gap: 3.8rem;
     padding: 3.2rem 0;
