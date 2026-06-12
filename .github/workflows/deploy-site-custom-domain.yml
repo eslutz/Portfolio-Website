@@ -32,8 +32,8 @@ jobs:
   set_custom_domain:
     runs-on: ubuntu-latest
     env:
-      STATIC_WEB_APP_NAME: ${{ vars.APP_NAME }}-swa
-      RESOURCE_GROUP_NAME: ${{ vars.APP_NAME }}-resource-group
+      STATIC_WEB_APP_NAME: ${{ vars.PROD_APP_NAME }}-swa
+      RESOURCE_GROUP_NAME: ${{ vars.PROD_APP_NAME }}-resource-group
     name: Set Custom Domain Job
     steps:
       - name: Checkout code

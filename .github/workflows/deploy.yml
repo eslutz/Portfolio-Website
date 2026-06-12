@@ -7,7 +7,8 @@ name: Deploy Portfolio Infrastructure
 ##  WORKFLOW TRIGGER
 #########################################################################################
 on:
-  # Manual trigger for on-demand infrastructure deployment and site redeploy
+  # Manual trigger for on-demand production infrastructure deployment and site redeploy.
+  # This workflow is guarded so workflow_dispatch only deploys from main.
   workflow_dispatch:
   # Automatic trigger on push to main branch
   push:
@@ -98,7 +99,7 @@ jobs:
             --template-file ./iac/main.bicep \
             --parameters \
               location=${{ vars.AZURE_REGION }} \
-              appName=${{ vars.APP_NAME }} \
+              appName=${{ vars.PROD_APP_NAME }} \
               repoUrl=${{ github.server_url }}/${{ github.repository }} \
               repoBranch=${{ github.ref_name }} \
               existingCosmosDbAccountName=${{ vars.COSMOS_ACCOUNT_NAME }} \
@@ -109,7 +110,7 @@ jobs:
     needs: detect-changes
     if: |
       needs.detect-changes.outputs.iac == 'true' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref_name == 'main'))
     runs-on: ubuntu-latest
     name: Deploy Infrastructure Job
     outputs:
@@ -137,14 +138,14 @@ jobs:
           parameters: |
             {
               "location": "${{ vars.AZURE_REGION }}",
-              "appName": "${{ vars.APP_NAME }}",
+              "appName": "${{ vars.PROD_APP_NAME }}",
               "repoUrl": "${{ github.server_url }}/${{ github.repository }}",
               "repoBranch": "${{ github.ref_name }}",
               "existingCosmosDbAccountName": "${{ vars.COSMOS_ACCOUNT_NAME }}",
               "existingCosmosDbResourceGroup": "${{ vars.COSMOS_RESOURCE_GROUP }}"
             }
 
-  # Refreshes the SWA deployment token after infra deployment, then queues site deploy separately.
+  # Refreshes the production SWA deployment token after infra deployment, then queues site deploy separately.
   save-swa-token-and-dispatch-site:
     needs: deploy-infrastructure
     runs-on: ubuntu-latest
@@ -173,7 +174,7 @@ jobs:
           GH_TOKEN: ${{ secrets.REPO_SECRETS_TOKEN }}
           SWA_TOKEN: ${{ steps.get-swa-token.outputs.swa_token }}
         run: |
-          gh secret set SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
+          gh secret set PROD_SWA_DEPLOYMENT_TOKEN --body "$SWA_TOKEN" --repo "${{ github.repository }}"
 
       - name: Dispatch site deployment workflow
         env:

@@ -7,8 +7,8 @@ name: Deploy Portfolio Site
 ##  WORKFLOW TRIGGER
 #########################################################################################
 on:
-  # Manual trigger for on-demand site deployment.
-  # Infrastructure uses this event after refreshing SWA_DEPLOYMENT_TOKEN.
+  # Manual trigger for on-demand production site deployment.
+  # Infrastructure uses this event after refreshing PROD_SWA_DEPLOYMENT_TOKEN.
   workflow_dispatch:
     inputs:
       source:
@@ -132,6 +132,7 @@ jobs:
     if: |
       always() &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref_name == 'main' &&
       needs.quality.result == 'success' &&
       (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.iac != 'true')
     runs-on: ubuntu-latest
@@ -159,7 +160,7 @@ jobs:
       - name: Build and deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.PROD_SWA_DEPLOYMENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: dist/portfolio/browser
@@ -196,7 +197,7 @@ jobs:
       - name: Build and deploy preview
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.PREVIEW_SWA_DEPLOYMENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: dist/portfolio/browser
@@ -213,6 +214,6 @@ jobs:
       - name: Close pull request preview
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.PREVIEW_SWA_DEPLOYMENT_TOKEN }}
           action: close
           app_location: /
