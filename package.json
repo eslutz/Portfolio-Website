@@ -24,7 +24,8 @@
     "swa:start": "npm run build && dotnet build && swa start ./dist/portfolio/browser --api-location=./api",
     "lint": "ng lint",
     "test": "ng test",
-    "test:ci": "ng test --watch=false --browsers=ChromeHeadless"
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "migrate:media": "node scripts/migrate-media-to-blob.mjs"
   },
   "private": true,
   "dependencies": {

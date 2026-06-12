@@ -1,0 +1,178 @@
+.cms {
+  --border: #d9dee7;
+  --ink: #25282c;
+  --muted: #68707a;
+  background: #f8f9fb;
+  min-height: 100vh;
+  padding: 3.2rem;
+}
+
+.cms-header,
+.cms-tabs,
+.cms-panel,
+.cms-alert,
+.cms-loading {
+  margin: 0 auto;
+  max-width: 118rem;
+}
+
+.cms-header,
+.panel-heading,
+.card-heading,
+.button-row,
+.cms-tabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: space-between;
+}
+
+.cms-header {
+  padding: 1.6rem 0 2.4rem;
+}
+
+.cms-tabs {
+  justify-content: flex-start;
+  padding-bottom: 2.4rem;
+}
+
+.cms h1,
+.cms h2,
+.cms h3,
+.cms legend {
+  color: var(--ink);
+}
+
+.cms h1 {
+  font-size: 3.6rem;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.cms-kicker,
+.cms-user {
+  color: var(--muted);
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.cms-tabs button,
+.primary-button,
+.secondary-button,
+.danger-button {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 650;
+  padding: 0.9rem 1.4rem;
+}
+
+.cms-tabs button,
+.secondary-button {
+  background: #dfe5ec;
+  color: #2f3337;
+}
+
+.cms-tabs button.active,
+.primary-button {
+  background: #603aa1;
+  color: #fff;
+}
+
+.danger-button {
+  background: #f3d7dc;
+  color: #9b1730;
+}
+
+.cms-panel,
+.editor-card,
+.nested-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  min-width: 0;
+  padding: 2rem;
+}
+
+.cms-panel {
+  gap: 2rem;
+  padding: 2.4rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cms label {
+  color: #464d56;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.4rem;
+  font-weight: 650;
+  gap: 0.8rem;
+}
+
+.cms input,
+.cms select,
+.cms textarea {
+  border: 1px solid #cdd4df;
+  border-radius: 6px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.6rem;
+  min-height: 4.4rem;
+  padding: 1rem 1.2rem;
+  width: 100%;
+}
+
+.cms textarea {
+  font-family: monospace;
+  resize: vertical;
+}
+
+.cms-alert,
+.cms-loading {
+  border-radius: 6px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.6rem;
+  padding: 1.2rem 1.4rem;
+}
+
+.cms-alert.error {
+  background: #fde7ec;
+  color: #8a1730;
+}
+
+.cms-alert.success {
+  background: #e5f5ed;
+  color: #1f6a43;
+}
+
+@media (max-width: 760px) {
+  .cms {
+    padding: 2rem;
+  }
+
+  .cms-header,
+  .panel-heading,
+  .card-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+}

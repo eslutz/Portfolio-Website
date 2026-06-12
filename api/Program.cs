@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PortfolioApi.Models;
+using PortfolioApi.Services;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -46,6 +47,10 @@ builder.Services.AddSingleton(serviceProvider =>
   return serviceProvider.GetRequiredService<CosmosClient>()
     .GetContainer(cosmosConfig.DatabaseName, cosmosConfig.ContainerName);
 });
+
+builder.Services.AddSingleton<CmsAuthorizationService>();
+builder.Services.AddSingleton<HtmlContentSanitizer>();
+builder.Services.AddSingleton<MediaStorageService>();
 
 builder.Logging.Services.Configure<LoggerFilterOptions>(options =>
 {

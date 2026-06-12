@@ -29,6 +29,11 @@ var cosmos = {
   dbName: '${appName}-db'
   containerName: '${appName}-container'
 }
+@description('The properties for CMS media storage')
+var mediaStorage = {
+  accountName: take('${replace(toLower(appName), '-', '')}${uniqueString(subscription().id, appName)}', 24)
+  containerName: 'portfolio-media'
+}
 @description('The properties for Application Insights')
 var appInsights = {
   workspaceName: '${appName}-log-analytics-workspace'
@@ -80,6 +85,18 @@ module applicationInsights 'modules/appinsights.bicep' = {
   }
 }
 
+// Create CMS media storage resources
+module storageAccount 'modules/storageaccount.bicep' = {
+  scope: resourceGroup
+  name: 'mediaStorageDeploy'
+  params: {
+    location: location
+    name: mediaStorage.accountName
+    containerName: mediaStorage.containerName
+    tags: tags
+  }
+}
+
 // Create Static Web App Resources
 module staticWebApp 'modules/staticwebapp.bicep' = {
   scope: resourceGroup
@@ -92,6 +109,10 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
     cosmosDbAccountId: existingCosmosDbAccount.id
     cosmosDbName: cosmos.dbName
     cosmosContainerName: cosmos.containerName
+    mediaStorageAccountId: storageAccount.outputs.storageAccountId
+    mediaStorageAccountName: storageAccount.outputs.storageAccountName
+    mediaContainerName: storageAccount.outputs.containerName
+    mediaBaseUrl: storageAccount.outputs.mediaBaseUrl
     appInsightsId: applicationInsights.outputs.appInsightsId
     tags: tags
   }
@@ -103,3 +124,5 @@ output resourceGroupName string = resourceGroupName
 output defaultHostname string = staticWebApp.outputs.defaultHostname
 output cosmosDatabaseName string = cosmosDb.outputs.databaseName
 output cosmosContainerName string = cosmosDb.outputs.containerName
+output mediaStorageAccountName string = storageAccount.outputs.storageAccountName
+output mediaContainerName string = storageAccount.outputs.containerName

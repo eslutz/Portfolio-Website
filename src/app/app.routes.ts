@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { cmsAuthGuard } from './features/cms/cms-auth.guard';
 import { HomeComponent } from './features/home/home.component';
 
 export const routes: Routes = [
@@ -23,6 +24,13 @@ export const routes: Routes = [
         (m) => m.AchievementsComponent
       ),
     data: { title: 'Achievements' },
+  },
+  {
+    path: 'cms',
+    canActivate: [cmsAuthGuard],
+    loadComponent: () =>
+      import('./features/cms/cms.component').then((m) => m.CmsComponent),
+    data: { title: 'CMS' },
   },
   {
     path: '**',
