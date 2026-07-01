@@ -47,7 +47,7 @@ jobs:
       iac: ${{ steps.changes.outputs.iac }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
         with:
           fetch-depth: 0
 
@@ -84,7 +84,7 @@ jobs:
     name: Validate Infrastructure Job
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
 
       - name: Azure login
         uses: azure/login@v3.0.0
@@ -118,7 +118,7 @@ jobs:
       resourceGroupName: ${{ steps.deploy-bicep.outputs.resourceGroupName }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
 
       - name: Azure login
         uses: azure/login@v3.0.0
