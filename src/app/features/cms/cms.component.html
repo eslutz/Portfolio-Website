@@ -1,15 +1,15 @@
 <section class="cms">
   <header class="cms-header">
-    <div>
+    <div class="cms-title-group">
       <p class="cms-kicker">Portfolio CMS</p>
       <h1>Content Manager</h1>
       @if (principal(); as user) {
         <p class="cms-user">Signed in as {{ user.userDetails }}</p>
       }
     </div>
-    <div class="button-row">
+    <div class="cms-actions">
       <label class="theme-control" for="cms-theme">
-        Theme
+        <span>Theme</span>
         <select
           id="cms-theme"
           [value]="themePreference()"
