@@ -12,7 +12,10 @@
       } @else {
         <div>
           @for (project of state().projects; track project.id) {
-            <app-project [project]="project" class="project"></app-project>
+            <app-project
+              [id]="projectAnchor(project)"
+              [project]="project"
+              class="project"></app-project>
           }
         </div>
       }

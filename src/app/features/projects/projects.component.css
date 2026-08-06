@@ -1,4 +1,5 @@
 .project {
+  scroll-margin-top: 1rem;
   gap: 2rem;
   display: -ms-grid;
   display: grid;
