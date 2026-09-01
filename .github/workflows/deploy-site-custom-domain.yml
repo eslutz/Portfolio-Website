@@ -59,7 +59,7 @@ jobs:
           echo "Validation passed: CUSTOM_ROOT_DOMAIN is set to $ROOT_DOMAIN"
 
       - name: Azure login
-        uses: azure/login@v3.0.0
+        uses: azure/login@v3.0.2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 

@@ -87,7 +87,7 @@ jobs:
         uses: actions/checkout@v6.0.3
 
       - name: Azure login
-        uses: azure/login@v3.0.0
+        uses: azure/login@v3.0.2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v6.0.3
 
       - name: Azure login
-        uses: azure/login@v3.0.0
+        uses: azure/login@v3.0.2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -152,7 +152,7 @@ jobs:
     name: Save SWA Token and Dispatch Site Job
     steps:
       - name: Azure login
-        uses: azure/login@v3.0.0
+        uses: azure/login@v3.0.2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
