@@ -34,7 +34,7 @@ on:
 # Keep each PR preview and its cleanup together, separate from production deploys.
 # Push and manual production deploys share a group to prevent overlapping releases.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'production' }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('ref-{0}', github.ref) }}
   cancel-in-progress: true
 
 #########################################################################################
