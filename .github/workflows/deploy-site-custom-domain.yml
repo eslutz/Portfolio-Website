@@ -37,7 +37,7 @@ jobs:
     name: Set Custom Domain Job
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.1
 
       - name: Validate custom domain
         run: |
@@ -59,7 +59,7 @@ jobs:
           echo "Validation passed: CUSTOM_ROOT_DOMAIN is set to $ROOT_DOMAIN"
 
       - name: Azure login
-        uses: azure/login@v3.0.0
+        uses: azure/login@v3.1.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
